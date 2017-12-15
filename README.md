@@ -17,11 +17,11 @@ To invoke the Passthrough Telemetrie follow these steps:
 7. select the "telemetrie" widget.
 8. Configure the widget to our needs:
 
-Capacity	-- lipo capacity
-Cells		-- lipo cells
-Arm		    -- arming switch for Betaflight, not needed with ArduCopter
-Mode        -- bf: switch for flightmodes / AP: switch for toggle screens
-Setting     -- here you can define which setting to use (line 184)
+Capacity -- lipo capacity
+Cells		 -- lipo cells
+Arm		   -- arming switch for Betaflight, not needed with ArduCopter
+Mode     -- bf: switch for flightmodes / AP: switch for toggle screens
+Setting  -- here you can define which setting to use (line 184)
 
 To configure it basicaly you can use the widget options:
 Setting 1 to 3 can be used with betaflight, cleanflight ore any other controllers, models and sensors
@@ -30,4 +30,3 @@ Setting 4 is specialy for ArduCopter and contains 3 Screens which can be configu
 Screen 1 shows varius sensors and data
 Screen 2 shows Mavlink Messages (12 rows)
 Screen 3 shows a artificial horizon
-
