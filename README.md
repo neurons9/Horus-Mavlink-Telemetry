@@ -32,7 +32,5 @@ Setting 1 to 3 can be used with betaflight, cleanflight ore any other controller
 Setting 4 is specialy for ArduCopter and contains 3 Screens which can be configured und toggled with a 3-pos switch (Mode source)
 
 Screen 1 shows varius sensors and data
-
 Screen 2 shows Mavlink Messages (12 rows)
-
 Screen 3 shows a artificial horizon
