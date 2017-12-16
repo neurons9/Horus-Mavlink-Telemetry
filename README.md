@@ -1,7 +1,7 @@
 # Horus-Mavlink-Telemetry
 A universal lua script for displaying mavlink values on FrSky Horus OpenTX
 
-This Lua Widget script is showing varius Data and Values on your screen.
+This Lua Widget script shows varius data and values on your screen. For first commit the script shows Mavlink Data and Betaflight/Cleanflight or other Sensors. To get it simpler i will remove this and make two seperate widgets in the near future.
 
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-26.png">
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-38.png">
