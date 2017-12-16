@@ -674,7 +674,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 end
 
 ------------------------------------------------- 
--- Battery --------------------------- battery --
+-- art. horizon -------------------------- hud --
 -------------------------------------------------
 local function drawHud(xCoord, yCoord, cellHeight, name)
  	
