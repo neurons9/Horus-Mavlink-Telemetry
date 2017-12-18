@@ -86,8 +86,8 @@ local function run()
 		msl = bit32.extract(v,22,9)
 		setTelemetryValue (5002,0,3,sat,0,0,"SAT")
 		setTelemetryValue (5002,0,4,fix,0,0,"FIX")
-		setTelemetryValue (5002,0,5,hdp,9,0,"HDP")
-		setTelemetryValue (5002,0,6,vdp,9,0,"VDP")
+		setTelemetryValue (5002,0,5,hdp,9,1,"HDP")
+		setTelemetryValue (5002,0,6,vdp,9,1,"VDP")
 		setTelemetryValue (5002,0,7,msl,9,0,"MSL")
 	end
 	
@@ -96,8 +96,8 @@ local function run()
 		vol = bit32.extract(v,0,9)
 		cur = bit32.extract(v,9,8)
 		drw = bit32.extract(v,17,15)
-		setTelemetryValue (5003,0,8,vol,1,0,"VOL")
-		setTelemetryValue (5003,0,9,cur,2,0,"CUR")
+		setTelemetryValue (5003,0,8,vol,1,1,"VOL")
+		setTelemetryValue (5003,0,9,cur,2,1,"CUR")
 		setTelemetryValue (5003,0,10,drw,3,0,"DRW")
 	end
 	
@@ -106,7 +106,7 @@ local function run()
 		dst = bit32.extract(v,0,12)
 		alt = bit32.extract(v,19,12)
 		setTelemetryValue (5004,0,11,dst,9,0,"DST")
-		setTelemetryValue (5004,0,12,alt,9,0,"ALT")
+		setTelemetryValue (5004,0,12,alt,9,1,"ALT")
 	end
 	
 	-- unpack 5005 packet
