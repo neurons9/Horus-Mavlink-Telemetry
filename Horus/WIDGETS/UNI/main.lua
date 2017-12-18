@@ -502,7 +502,7 @@ local function fmWidget(xCoord, yCoord, cellHeight, name, img)
 	lcd.drawText(xTxt1, yTxt1, valTxt, modeSize.sml + modeAlign.ri + CUSTOM_COLOR)
 	
 	lcd.setColor(CUSTOM_COLOR, col_lab)			
-	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "Mode ["..autopilot.."]", modeSize.sml + CUSTOM_COLOR)
+	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "Mode [AP]", modeSize.sml + CUSTOM_COLOR)
 	
 	if img ~= nil then
 		dynamicWidgetImg(xCoord, yCoord, cellHeight, name, myImgValue, img)
@@ -718,7 +718,7 @@ local function callWidget(name, xPos, yPos, height)
 		-- special widgets / txt widgets
 		if (name == "msg") then
 			msgWidget(xPos, yPos, height, name)
-		elseif (name == "batt" or name = "batt_ap") then
+		elseif (name == "batt" or name == "batt_ap") then
 			batteryWidget(xPos, yPos, height, name)
 		elseif (name == "armed") then
 			armedWidget(xPos, yPos, height, name, 1)
