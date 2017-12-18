@@ -34,11 +34,11 @@ local col_lin = GREY	    	-- standard line value color
 local modeSize = {sml = SMLSIZE, mid = MIDSIZE, dbl = DBLSIZE, smlH = 12, midH = 18, dbl = 24}
 local modeAlign = {ri = RIGHT, le = LEFT}
 
-local offsetValue = {x = 0.75, x2 = 0.65, y = 30, y2 = 25}
-local offsetUnit  = {x = 0, y = 16} -- y offset from bottom of box
-local offsetLabel = {x = 4, y = 2}  -- y offset from top of box
-local offsetMax   = {x = 4, y = 2}  -- y offset from top of box
-local offsetPic   = {x = 2, y = 30} -- y offset from top of box (only battery icon for now)
+local offsetValue = {x = 0.68, y = 30} -- x in %
+local offsetUnit  = {x = 0, y = 16}    -- y offset from bottom of box
+local offsetLabel = {x = 4, y = 3}     -- y offset from top of box
+local offsetMax   = {x = 4, y = 2}     -- y offset from top of box
+local offsetPic   = {x = 2, y = 3, batt = 30}  -- y offset from bottom of box, battery icon from top
 
 -- frsky passthrough vars
 local svr,msg = 0,0
@@ -131,34 +131,23 @@ local delta
 
 
 local options = {
-	{ "Capacity", VALUE, 1000, 500, 2400 },	-- lipo capacity
 	{ "Cells", VALUE, 3, 2, 6 },			-- lipo cells
-	{ "Arm", SOURCE, 1},		            -- arming switch (BF only)
-	{ "Mode", SOURCE, 1},			        -- bf: switch for flightmodes / AP: switch for toggle screens
-	{ "Setting", VALUE, 1, 1, 4 },	        -- widget templates bf: 1-3 / AP 4
+	{ "Mode", SOURCE, 1},			        -- switch for toggle screens
+	{ "Setting", VALUE, 1, 1, 2 },	        -- widget templates
 }
 
 function create(zone, options)
 	local context  = { zone=zone, options=options }
-		lipoCapa      = context.options.Capacity
 		lipoCells     = context.options.Cells
-		armSwitch     = context.options.Arm
 		modeSwitch    = context.options.Mode
 		setting       = context.options.Setting
-		if setting <= 3 then
-			autopilot = "BF"
-		else
-			autopilot = "AP"
-		end
 		widget()
 	return context
 end
 
 function update(context, options)
 	context.options = options
-	lipoCapa      = context.options.Capacity
 	lipoCells     = context.options.Cells
-	armSwitch     = context.options.Arm
 	modeSwitch    = context.options.Mode
 	setting       = context.options.Setting
 	if setting <= 3 then
@@ -175,22 +164,22 @@ end
 function widget()
 	local switchPos = getValue(modeSwitch)
 	-- standard sensors: battery heading vfas curr alt speed vspeed rssi rxbat timer 
-	-- betaflight BF:    armed fm 
 	-- Ardupilot  AP:    armed fm battery msg gps alt_ap msl_ap volt_ap curr_ap drawn_ap dist_ap speed_ap mavtype pitch roll yaw hud
-	-- if on widget needs more space you can add "0" in the row after (max. 2 times). "1" for empty space
+	-- if one widget needs more space you can add "0" in the row after (max. 2 times). "1" for empty space
 	-- {{column1-row1,column1-row2,column1-row3},{column2-row1,column2-row2,column2-row3},{etc}}
 	
-	if     setting == 1 then
-		widgetDefinition = {{"armed", "fm", "timer"},{"battery", 0, "heading"},{"vfas", "rxbat", "rssi"}}
-	elseif setting == 2 then
-		widgetDefinition = {{"armed", "fm", "heading"},{"battery"},{"vfas", "rssi", "rxbat", "timer"}}
-	elseif setting == 3 then
-		widgetDefinition = {{"armed", "fm", "heading"},{"battery"},{"vfas", "rssi", "rxbat", "timer"}}
-	elseif setting == 4 and switchPos < 0 then
-		widgetDefinition = {{"armed", "fm", "mavtype", "timer"},{"battery", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 4 and switchPos == 0 then
+	-- 2 examples of widget definitions with 3 screens, you can even add more
+	if     setting == 1 and switchPos < 0 then
+		widgetDefinition = {{"armed", "fm", "mavtype", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+	elseif setting == 1 and switchPos == 0 then
 		widgetDefinition = {{"msg"}}
-	elseif setting == 4 and switchPos > 0 then
+	elseif setting == 1 and switchPos > 0 then
+		widgetDefinition = {{"hud"},{"roll", "pitch", "yaw", 1},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+	elseif setting == 2 and switchPos < 0 then
+		widgetDefinition = {{"armed", "fm", "mavtype", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+	elseif setting == 2 and switchPos == 0 then
+		widgetDefinition = {{"msg"}}
+	elseif setting == 2 and switchPos > 0 then
 		widgetDefinition = {{"hud"},{"roll", "pitch", "yaw", 1},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
 	else
 		widgetDefinition = {}
@@ -358,7 +347,7 @@ local function dynamicWidgetImg(xCoord, yCoord, cellHeight, name, myImgValue, im
 	end
 	
 	w, h = Bitmap.getSize(image)
-	xPic = xCoord+offsetLabel.x; yPic = yCoord  + (cellHeight) - h - 3
+	xPic = xCoord+offsetLabel.x; yPic = yCoord  + (cellHeight) - h - offsetPic.y
 	lcd.drawBitmap(image, xPic, yPic)
 	
 end
@@ -370,7 +359,7 @@ local function stdWidget(xCoord, yCoord, cellHeight, name, sensor, label, unit, 
 	local myValue
 	local myMinMaxValue
 	
-	xTxt1 = xCoord + cellWidth   * offsetValue.x2
+	xTxt1 = xCoord + cellWidth   * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
     
@@ -378,7 +367,11 @@ local function stdWidget(xCoord, yCoord, cellHeight, name, sensor, label, unit, 
 		if type(sensor) == number then
         	myValue = sensor
     	else 
-    		myValue = round(getValueOrDefault(sensor),digits)
+    		if digits ~= nil then
+    			myValue = round(getValueOrDefault(sensor),digits)
+    		else
+    			myValue = getValueOrDefault(sensor)
+    		end
     	end
 		lcd.setColor(CUSTOM_COLOR, col_std)
 		lcd.drawText(xTxt1, yTxt1, myValue, modeSize.mid + modeAlign.ri + CUSTOM_COLOR)
@@ -417,7 +410,7 @@ local function gpsWidget(xCoord, yCoord, cellHeight, name, img)
 	local myMinMaxValue
 	local myLabel
 	
-	xTxt1 = xCoord + cellWidth   * offsetValue.x2
+	xTxt1 = xCoord + cellWidth   * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
     
@@ -427,7 +420,7 @@ local function gpsWidget(xCoord, yCoord, cellHeight, name, img)
     myLabel = fixetype[myImgValue]
     
 	lcd.setColor(CUSTOM_COLOR, col_std)
-	lcd.drawText(xTxt1, yTxt1, myValue, modeSize.mid + modeAlign.ri + CUSTOM_COLOR)
+	lcd.drawText(xTxt1, yTxt1, round(myValue,1), modeSize.mid + modeAlign.ri + CUSTOM_COLOR)
 	
 	lcd.setColor(CUSTOM_COLOR, col_max)
 	lcd.drawText(xCoord + cellWidth - offsetMax.x, yCoord + offsetMax.y, myMinMaxValue, modeSize.sml + modeAlign.ri + CUSTOM_COLOR)
@@ -458,7 +451,7 @@ local function timerWidget(xCoord, yCoord, cellHeight, name)
 		valTxt = string.format("%i",minute)..":0"..string.format("%i",sec)
 	end 
 	
-	xTxt1 = xCoord + cellWidth   * offsetValue.x2
+	xTxt1 = xCoord + cellWidth   * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
 	
@@ -499,20 +492,8 @@ end
 ------------------------------------------------- 
 local function fmWidget(xCoord, yCoord, cellHeight, name, img)
 	local myImgValue
-	if autopilot == "BF" then
-		local switchPos = getValueOrDefault(modeSwitch)
-		if switchPos < 0 then
-			valTxt = "HORIZON"
-		elseif switchPos > 0 then
-			valTxt = "ANTI GRAVITY" 
-		else
-			valTxt = "ANGLE"
-		end
-		myImgValue = nil
-	elseif autopilot == "AP" then
-		myImgValue = getValueOrDefault("MOD")
-		valTxt = flightMode[myImgValue]
-	end
+	local myImgValue = getValueOrDefault("MOD")
+	local valTxt = flightMode[myImgValue]
 	
 	xTxt1 = xCoord + cellWidth
 	yTxt1 = yCoord + cellHeight/2 - modeSize.smlH/2
@@ -532,27 +513,14 @@ end
 -- Armed/Disarmed (Switch) ------------- armed --
 ------------------------------------------------- 
 local function armedWidget(xCoord, yCoord, cellHeight, name, img)
-	local myImgValue
-	if autopilot == "BF" then
-		local switchPos = getValueOrDefault(armSwitch)
-		if switchPos < 0 then
-			valTxt = "DISARMED"
-			myImgValue = 0
-			lcd.setColor(CUSTOM_COLOR, col_std)	
-		else
-			valTxt = "ARMED"
-			myImgValue = 1
-			lcd.setColor(CUSTOM_COLOR, col_alm)	
-		end
-	elseif autopilot == "AP" then
-		myImgValue = getValueOrDefault("ARM")
-		valTxt = armed[myImgValue]
-		if myImgValue == 0 then
-			lcd.setColor(CUSTOM_COLOR, col_std)	
-		else
-			lcd.setColor(CUSTOM_COLOR, col_alm)
-		end
+	local myImgValue = getValueOrDefault("ARM")
+	local valTxt     = armed[myImgValue]
+	if myImgValue == 0 then
+		lcd.setColor(CUSTOM_COLOR, col_std)	
+	else
+		lcd.setColor(CUSTOM_COLOR, col_alm)
 	end
+
 	xTxt1 = xCoord + cellWidth
 	yTxt1 = yCoord + cellHeight/2 - modeSize.smlH/2
 		
@@ -587,6 +555,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	local myVoltage
 	local myPercent = 0
 	local battCell  = lipoCells.."S"
+	local battCapa  = getValueOrDefault("CAP")
 	
 	local _6SL = 21      -- 6 cells 6s | Warning
     local _6SH = 25.2    -- 6 cells 6s
@@ -598,9 +567,9 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
     local _2SH = 8.4     -- 2 cells 2s
     
 	
-	if autopilot == "BF" then
+	if name == "vfas" then
 		myVoltage = getValueOrDefault("VFAS")
-	elseif autopilot == "AP" then
+	elseif name == "batt_ap" then
 		myVoltage = getValueOrDefault("VOL") 
 	end
 	
@@ -627,9 +596,9 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	end
 	
 	lcd.setColor(CUSTOM_COLOR, col_lab)
-	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "["..battCell.."/"..lipoCapa.."mAh]", modeSize.sml + CUSTOM_COLOR)
+	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "["..battCell.."/"..battCapa.."mAh]", modeSize.sml + CUSTOM_COLOR)
 		
-	xTxt1 = xCoord + cellWidth   * offsetValue.x2
+	xTxt1 = xCoord + cellWidth   * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
 		
@@ -669,12 +638,12 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	end
 	
 	w, h = Bitmap.getSize(batImage)
-	xPic = xCoord + (cellWidth * 0.5) - (w * 0.5); yPic = yCoord + offsetPic.y
+	xPic = xCoord + (cellWidth * 0.5) - (w * 0.5); yPic = yCoord + offsetPic.batt
 	lcd.drawBitmap(batImage, xPic, yPic)
 end
 
 ------------------------------------------------- 
--- art. horizon -------------------------- hud --
+-- Horizon ------------------------------- hud --
 -------------------------------------------------
 local function drawHud(xCoord, yCoord, cellHeight, name)
  	
@@ -695,7 +664,7 @@ local function drawHud(xCoord, yCoord, cellHeight, name)
 	cosRoll = math.cos(math.rad(-rol))
 
 	delta = pit % 15
-	for i =  delta - 60 , 60 + delta, 15 do
+	for i =  delta - 30 , 30 + delta, 15 do
 		XH = pit == i % 360 and size or 10
 		YH = pitchR * i							
     
@@ -746,10 +715,10 @@ end
  
 local function callWidget(name, xPos, yPos, height)
 	if (xPos ~= nil and yPos ~= nil) then
-		-- special widgets
+		-- special widgets / txt widgets
 		if (name == "msg") then
 			msgWidget(xPos, yPos, height, name)
-		elseif (name == "battery") then
+		elseif (name == "batt" or name = "batt_ap") then
 			batteryWidget(xPos, yPos, height, name)
 		elseif (name == "armed") then
 			armedWidget(xPos, yPos, height, name, 1)
@@ -765,49 +734,49 @@ local function callWidget(name, xPos, yPos, height)
 			drawHud(xPos, yPos, height, name, nil)
 
 		
-		-- stdWidget(x,      y,      height, name, sensor,      label,         unit, dig, minmax,     img)
+		-- stdWidget(x,      y,      height, name, sensor,      label,         unit,   dig, minmax,   img)
 				
-		-- standard widgets called with sensors
+		-- standard sensor widgets called with sensors
 		elseif (name == "vfas") then
-			stdWidget(xPos,  yPos,   height, name, "VFAS",      "Volt",        "V",    2, "VFAS-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "VFAS",      "Volt",        "V",    1, "VFAS-",    nil)
 		elseif (name == "curr") then
-			stdWidget(xPos,  yPos,   height, name, "Curr",      "Curr",        "A",    2, "Curr+",    nil)
+			stdWidget(xPos,  yPos,   height, name, "Curr",      "Curr",        "A",    1, "Curr+",    nil)
 		elseif (name == "rxbat") then
-			stdWidget(xPos,  yPos,   height, name, "RxBt",      "RxBt",        "V",    2, "RxBt-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "RxBt",      "RxBt",        "V",    1, "RxBt-",    nil)
 		elseif (name == "rssi")  then
-			stdWidget(xPos,  yPos,   height, name, "RSSI",      "RSSI",        "db",   2, "RSSI-",    1)
+			stdWidget(xPos,  yPos,   height, name, "RSSI",      "RSSI",        "db",   nil, "RSSI-",    1)
 		elseif (name == "speed") then
-			stdWidget(xPos,  yPos,   height, name, "GSpd",      "H Speed",     "km/h", 2, "GSpd+",    nil)
+			stdWidget(xPos,  yPos,   height, name, "GSpd",      "H Speed",     "km/h", 0, "GSpd+",    nil)
 		elseif (name == "vspeed") then
-			stdWidget(xPos,  yPos,   height, name, "V-Speed",   "V Speed",     "m/s",  2, "V-Speed+", nil)
+			stdWidget(xPos,  yPos,   height, name, "V-Speed",   "V Speed",     "m/s",  0, "V-Speed+", nil)
 		elseif (name == "dist") then
-			stdWidget(xPos,  yPos,   height, name, "Dist",      "Dist",        "m",    2, "Dist-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "Dist",      "Dist",        "m",    1, "Dist-",    nil)
 		elseif (name == "alt") then
-			stdWidget(xPos,  yPos,   height, name, "Alt",       "Alt",         "m",    2, "Alt+",     nil)
+			stdWidget(xPos,  yPos,   height, name, "Alt",       "Alt",         "m",    1, "Alt+",     nil)
 		elseif (name == "heading") then
 			stdWidget(xPos,  yPos,   height, name, "Hdg",       "Heading",     "dg",   1, nil,        nil)
 			
 		-- standard widgets called with passthrough telemetry sensors
 		elseif (name == "alt_ap") then
-			stdWidget(xPos,  yPos,   height, name, "ALT",       "AGL",         "m",    2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "ALT",       "AGL",         "m",    nil, nil,        nil)
 		elseif (name == "speed_ap") then
-			stdWidget(xPos,  yPos,   height, name, "SPD",       "Speed",       "km/h", 2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "SPD",       "Speed",       "km/h", nil, nil,        nil)
 		elseif (name == "dist_ap") then
-			stdWidget(xPos,  yPos,   height, name, "DST",       "Dist",        "m",    2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "DST",       "Dist",        "m",    nil, nil,        nil)
 		elseif (name == "msl_ap") then
-			stdWidget(xPos,  yPos,   height, name, "MSL",       "MSL",         "m",    2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "MSL",       "MSL",         "m",    nil, nil,        nil)
 		elseif (name == "volt_ap") then
-			stdWidget(xPos,  yPos,   height, name, "VOL",       "Volt",        "V",    2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "VOL",       "Volt",        "V",    2,   nil,        nil)
 		elseif (name == "curr_ap") then
-			stdWidget(xPos,  yPos,   height, name, "CUR",       "Curr",        "A",    2, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "CUR",       "Curr",        "A",    nil, nil,        nil)
 		elseif (name == "drawn_ap") then
-			stdWidget(xPos,  yPos,   height, name, "DRW",       "Used",        "mAh",  0, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "DRW",       "Used",        "mAh",  nil, nil,        nil)
 		elseif (name == "yaw") then
-			stdWidget(xPos,  yPos,   height, name, "YAW",       "Yaw",         "dg",   1, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "YAW",       "Yaw",         "dg",   nil, nil,        nil)
 		elseif (name == "pitch") then
-			stdWidget(xPos,  yPos,   height, name, "PIT",       "Pitch",       "dg",   1, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "PIT",       "Pitch",       "dg",   nil, nil,        nil)
 		elseif (name == "roll") then
-			stdWidget(xPos,  yPos,   height, name, "ROL",       "Roll",        "dg",   1, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "ROL",       "Roll",        "dg",   nil, nil,        nil)
 				
 		else
 			return
@@ -819,17 +788,19 @@ end
 
 local function buildGrid(def, context)
 
-	local sumX = context.zone.x
-	local sumY = context.zone.y
+	local sumX = context.zone.x-10
+	local sumY = context.zone.y-5
+	local canvasWidth  = context.zone.w + 20 -- more space
+	local canvasHeight = context.zone.h + 15
 	
 	noCol = # def 	-- Anzahl Spalten berechnen
-	cellWidth = math.floor((context.zone.w / noCol))
+	cellWidth = math.floor((canvasWidth / noCol))
 	
 	-- widgets grid and lines
 	for i=1, noCol, 1
 	do
 	
-		local tempCellHeight = math.floor(context.zone.h / # def[i])
+		local tempCellHeight = math.floor(canvasHeight / # def[i])
 		for j=1, # def[i], 1
 		do
 			-- lines
@@ -856,7 +827,7 @@ local function buildGrid(def, context)
 		end
 		
 		-- Werte zurücksetzen
-		sumY = context.zone.y
+		sumY = context.zone.y-5
 		sumX = sumX + cellWidth
 	end
 end
