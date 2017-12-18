@@ -35,7 +35,7 @@ The "cfas" and "batt_ap" widget needs at least 3x cell height because.
 If you like my theme background image, you can find it in /THEMES/Default/ this is the place to take it. Dont forget to backup your original background.png. 
 
 
-# Known Bugs and issues:
+## Known Bugs and issues:
 1. hud horizon disapears some time
 2. latency to high?
 3. Mavlink msg are some times wraped or cutted
