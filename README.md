@@ -1,9 +1,10 @@
 # Horus-Mavlink-Telemetry
 A universal lua script for displaying mavlink values on FrSky Horus OpenTX
 
-This Lua Widget script shows varius data and values on your screen. For first commit the script shows Mavlink Data and / or standard sensors.
+This Lua Widget script shows varius Mavlink Data and / or standard sensors data and values on your screen.
 
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-26.png">
+<img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-32.png">
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-38.png">
 
 To invoke the Passthrough Telemetrie follow these steps:
