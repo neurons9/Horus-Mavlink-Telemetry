@@ -28,4 +28,7 @@ Screen 2 (switch position 2) shows Mavlink Messages (12 rows)<br>
 Screen 3 (switch position 3) shows an artificial horizon
 
 
-If you like my background image, you can find it in /THEMES/Default/ this is the place to take it. Dont forget to backup your original background.png. 
+The "hud" widget needs at least 1/3 cell width and 2x height.<br>
+The "cfas" and "batt_ap" widget needs at least 3x cell height because.
+
+If you like my theme background image, you can find it in /THEMES/Default/ this is the place to take it. Dont forget to backup your original background.png. 
