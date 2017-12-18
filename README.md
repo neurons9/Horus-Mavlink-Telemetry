@@ -22,7 +22,7 @@ Cells		 -- lipo cells<br>
 Mode     -- switch for toggle screens<br>
 Setting  -- here you can define which setting to use<br>
 
-The widget definition examples should now display the following screens:
+The widget definition examples should now display the following screens on your Horus:<br>
 Screen 1 (switch position 1) shows varius sensors and data<br>
 Screen 2 (switch position 2) shows Mavlink Messages (12 rows)<br>
 Screen 3 (switch position 3) shows an artificial horizon
