@@ -833,10 +833,8 @@ local function buildGrid(def, context)
 end
 
 local function refresh(context)
-	-- awake passthrough if FC is AP
-	if autopilot == "AP" then
-		 getSPort()
-	end
+	-- awake passthrough for mavlink msg
+	getSPort()
 	-- define widgets
 	widget()
 	-- Build Grid --
