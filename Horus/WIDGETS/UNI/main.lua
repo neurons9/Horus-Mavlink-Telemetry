@@ -104,7 +104,7 @@ armed[1] = "ARMED"
 local fixetype = {}
 fixetype[0] = "No GPS"
 fixetype[1] = "No Fix"
-fixetype[2] = "GPS Fix"
+fixetype[2] = "GPS Fix 2D"
 fixetype[3] = "DGPS"
 
 -- Mavlink messages
@@ -150,11 +150,6 @@ function update(context, options)
 	lipoCells     = context.options.Cells
 	modeSwitch    = context.options.Mode
 	setting       = context.options.Setting
-	if setting <= 3 then
-		autopilot = "BF"
-	else
-		autopilot = "AP"
-	end
 	context.back = nil
 	widget()
 end
@@ -330,7 +325,7 @@ local function dynamicWidgetImg(xCoord, yCoord, cellHeight, name, myImgValue, im
 	if name == "fm" then
 		if myImgValue == 0 then
 			image = Bitmap.open(imagePath.."sleep.png")
-		elseif mod == 4 or mod == 5 or mod == 6 or mod == 7 or mod == 10 or mod == 17 then
+		elseif myImgValue == 4 or mod == 5 or mod == 6 or mod == 7 or mod == 10 or mod == 17 then
 			image = Bitmap.open(imagePath.."auto.png")
 		else
 			image = Bitmap.open(imagePath.."human.png")
@@ -754,21 +749,21 @@ local function callWidget(name, xPos, yPos, height)
 		elseif (name == "alt") then
 			stdWidget(xPos,  yPos,   height, name, "Alt",       "Alt",         "m",    1, "Alt+",     nil)
 		elseif (name == "heading") then
-			stdWidget(xPos,  yPos,   height, name, "Hdg",       "Heading",     "dg",   1, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "Hdg",       "Heading",     "dg",   1,   nil,        nil)
 			
 		-- standard widgets called with passthrough telemetry sensors
 		elseif (name == "alt_ap") then
-			stdWidget(xPos,  yPos,   height, name, "ALT",       "AGL",         "m",    nil, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "ALT",       "AGL",         "m",    1,   nil,        nil)
 		elseif (name == "speed_ap") then
 			stdWidget(xPos,  yPos,   height, name, "SPD",       "Speed",       "km/h", nil, nil,        nil)
 		elseif (name == "dist_ap") then
-			stdWidget(xPos,  yPos,   height, name, "DST",       "Dist",        "m",    nil, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "DST",       "Dist",        "m",    1,   nil,        nil)
 		elseif (name == "msl_ap") then
-			stdWidget(xPos,  yPos,   height, name, "MSL",       "MSL",         "m",    nil, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "MSL",       "MSL",         "m",    1,   nil,        nil)
 		elseif (name == "volt_ap") then
 			stdWidget(xPos,  yPos,   height, name, "VOL",       "Volt",        "V",    2,   nil,        nil)
 		elseif (name == "curr_ap") then
-			stdWidget(xPos,  yPos,   height, name, "CUR",       "Curr",        "A",    nil, nil,        nil)
+			stdWidget(xPos,  yPos,   height, name, "CUR",       "Curr",        "A",    1,   nil,        nil)
 		elseif (name == "drawn_ap") then
 			stdWidget(xPos,  yPos,   height, name, "DRW",       "Used",        "mAh",  nil, nil,        nil)
 		elseif (name == "yaw") then
