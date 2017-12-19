@@ -1,9 +1,10 @@
 # Horus-Mavlink-Telemetry
 A universal lua script for displaying mavlink values on FrSky Horus OpenTX
 
-This Lua Widget script shows varius data and values on your screen. For first commit the script shows Mavlink Data and Betaflight/Cleanflight or other Sensors. To get it simpler i will remove this and make two seperate widgets in the near future.
+This Lua Widget script shows varius Mavlink Data and / or standard sensors data and values on your screen.
 
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-26.png">
+<img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-32.png">
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-38.png">
 
 To invoke the Passthrough Telemetrie follow these steps:
@@ -13,23 +14,31 @@ To invoke the Passthrough Telemetrie follow these steps:
 3. Copy pass.lua to your Horus SD Card /SCRIPTS/MIXES/
 4. Copy the widget folder to /WIDGETS
 5. Invoke the background Script in your model settings tab "custom scripts"
+6. Connect your vehicle with battery or USB Power and go to your models telemetry sensors and add the new sensors
 6. Go to your telemetrie setup and build a new screen, use the 1x1 layout and deactivate sliders and trim
 7. select the "telemetrie" widget.
 8. Configure the widget to our needs:
 
-Capacity -- lipo capacity<br>
 Cells		 -- lipo cells<br>
-Arm		   -- arming switch for Betaflight, not needed with ArduCopter<br>
-Mode     -- bf: switch for flightmodes / AP: switch for toggle screens<br>
-Setting  -- here you can define which setting to use (line 184)<br>
+Mode     -- switch for toggle screens<br>
+Setting  -- here you can define which setting to use<br>
 
-To configure it basicaly you can use the widget options:<br>
-Setting 1 to 3 can be used with betaflight, cleanflight ore any other controllers, models and sensors<br>
-Setting 4 is specialy for ArduCopter and contains 3 Screens which can be configured und toggled with a 3-pos switch (Mode source)
-
-Screen 1 shows varius sensors and data<br>
-Screen 2 shows Mavlink Messages (12 rows)<br>
-Screen 3 shows an artificial horizon
+The widget definition examples should now display the following screens on your Horus:<br>
+Screen 1 (switch position 1) shows varius sensors and data<br>
+Screen 2 (switch position 2) shows Mavlink Messages (12 rows)<br>
+Screen 3 (switch position 3) shows an artificial horizon
 
 
-If you like my background image, you can find it in /THEMES/Default/ this is the place to take it. Dont forget to backup your original background.png. 
+The "hud" widget needs at least 1/3 cell width and 2x height.<br>
+The "cfas" and "batt_ap" widget needs at least 3x cell height because.
+
+If you like my theme background image, you can find it in /THEMES/Default/ this is the place to take it. Dont forget to backup your original background.png. 
+
+
+## Known Bugs and issues:
+1. hud horizon disapears some time
+2. latency to high?
+3. Mavlink msg are some times wraped or cutted
+4. ...
+
+
