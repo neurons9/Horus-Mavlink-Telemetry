@@ -42,7 +42,7 @@ local offsetPic   = {x = 2, y = 3, batt = 30}  -- y offset from bottom of box, b
 
 -- frsky passthrough vars
 local svr,msg = 0,0
-local iterator = 0
+local i0,i1,i2,v
 
 -- Mavlink strings
 local mavType = {}
@@ -114,21 +114,24 @@ for i = 1, 12 do
 end
 
 currentMessageChunks = {}
-for i = 1, 36 do
+for i = 1, 60 do
 	currentMessageChunks[i] = nil
 end
 
-currentMessageChunkPointer = 0
-messageSeverity = -1
-messageLatest = 0
-messagesAvailable = 0
-messageLastChunk = 0
+local currentMessageChunkPointer = 0
+local messageSeverity = -1
+local messageLatest = 0
+local messagesAvailable = 0
+local messageLastChunk = 0
 
 -- artificial horizon
 local cosRoll, sinRoll, mapRatio
 local X1, Y1, X2, Y2, XH, YH
 local delta
 
+-- widgets
+local w, h, image, xPic, yPic, xTxt1, yTxt1, yTxt2
+local widgetDefinition = {}
 
 local options = {
 	{ "Cells", VALUE, 3, 2, 6 },			-- lipo cells
@@ -165,22 +168,33 @@ function widget()
 	
 	-- 2 examples of widget definitions with 3 screens, you can even add more
 	if     setting == 1 and switchPos < 0 then
-		widgetDefinition = {{"armed", "fm", "mavtype", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
 	elseif setting == 1 and switchPos == 0 then
-		widgetDefinition = {{"msg"}}
+		widgetDefinition = {{"roll", "pitch", "yaw", 1},{"hud_hdg"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
 	elseif setting == 1 and switchPos > 0 then
-		widgetDefinition = {{"hud"},{"roll", "pitch", "yaw", 1},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 2 and switchPos < 0 then
-		widgetDefinition = {{"armed", "fm", "mavtype", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 2 and switchPos == 0 then
 		widgetDefinition = {{"msg"}}
+	elseif setting == 2 and switchPos < 0 then
+		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+	elseif setting == 2 and switchPos == 0 then
+		widgetDefinition = {{"roll", "pitch", "yaw", 1},{"hud_hdg"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
 	elseif setting == 2 and switchPos > 0 then
-		widgetDefinition = {{"hud"},{"roll", "pitch", "yaw", 1},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
+		widgetDefinition = {{"msg"}}
 	else
 		widgetDefinition = {}
 	end
 end
 
+---------------------------------------------
+-- get ID of source -------------------------
+---------------------------------------------
+local function getTelemtryID(name)
+	local field = getFieldInfo(name)
+	
+	if field then
+		return field.id
+	end
+	return -1
+end
 
 ---------------------------------------------
 -- get value --------------------------------
@@ -208,7 +222,7 @@ end
 ---------------------------------------------
 local function bytesToString(bytesArray)
 	tempString = ""
-	for i = 1, 36 do
+	for i = 1, 60 do
 		if bytesArray[i] == '\0' or bytesArray[i] == nil then
 			return tempString
 		end
@@ -223,13 +237,14 @@ end
 -- get and store messages from mavlink ------
 --------------------------------------------- 
 local function getMessages(value)
+	--value = getValue(getTelemtryID(5000))
 	if (value ~= nil) and (value ~= 0) and (value ~= messageLastChunk) then
-		currentMessageChunks[currentMessageChunkPointer + 1] = bit32.band(bit32.rshift(value, 24), 0x7f)
-		currentMessageChunks[currentMessageChunkPointer + 2] = bit32.band(bit32.rshift(value, 16), 0x7f)
-		currentMessageChunks[currentMessageChunkPointer + 3] = bit32.band(bit32.rshift(value, 8), 0x7f)
-		currentMessageChunks[currentMessageChunkPointer + 4] = bit32.band(value, 0x7f)
+		currentMessageChunks[currentMessageChunkPointer + 1] = bit32.extract(value,24,7) 
+		currentMessageChunks[currentMessageChunkPointer + 2] = bit32.extract(value,16,7)
+		currentMessageChunks[currentMessageChunkPointer + 3] = bit32.extract(value,8,7) 
+		currentMessageChunks[currentMessageChunkPointer + 4] = bit32.extract(value,0,7)
 		currentMessageChunkPointer = currentMessageChunkPointer + 4
-		if (currentMessageChunkPointer > 35) or (currentMessageChunks[currentMessageChunkPointer] == '\0') then
+		if (currentMessageChunkPointer > 59) or (currentMessageChunks[currentMessageChunkPointer] == '\0') then
 			currentMessageChunkPointer = -1
 		end
 		if bit32.band(value, 0x80) == 0x80 then
@@ -243,7 +258,7 @@ local function getMessages(value)
 		if bit32.band(value, 0x800000) == 0x800000 then
 			messageSeverity = messageSeverity + 4
 			currentMessageChunkPointer = -1
- 		 end
+ 		end
 		if currentMessageChunkPointer == -1 then
 			currentMessageChunkPointer = 0
 			if messageLatest == 12 then
@@ -256,7 +271,7 @@ local function getMessages(value)
 			messages[messageLatest] = bytesToString(currentMessageChunks)
 			messagesAvailable = messagesAvailable + 1
 			messageSeverity = messageSeverity + 1
-			for i = 1, 36 do
+			for i = 1, 60 do
 				currentMessageChunks[i] = nil
 			end
 		end
@@ -268,12 +283,11 @@ end
 -- get and store SPort Passthrough MSG ------
 --------------------------------------------- 
 local function getSPort()
-	local i0,i1,i2,v = sportTelemetryPop()
+	i0,i1,i2,v = sportTelemetryPop()
 	
 	-- unpack 5000 packet
-	if i2 == 20480 then
-		svr = bit32.extract(v,0,3)
-		msg = bit32.extract(v,0,32)
+	if i2 == 0x5000 then
+		msg = bit32.extract(v,0,31)
 		getMessages(msg)
 	end
 
@@ -535,10 +549,17 @@ local function mavtypeWidget(xCoord, yCoord, cellHeight, name)
 	xTxt1 = xCoord + cellWidth
 	yTxt1 = yCoord + cellHeight/2 - modeSize.smlH/2
 	
+	local modelinfo = model.getInfo()
+	local mav = model.getGlobalVariable(0, 0)
+	
+	if mav == nil then
+		mav = 0
+	end
+	
 	lcd.setColor(CUSTOM_COLOR, col_std)
-	lcd.drawText(xTxt1, yTxt1, mavType[getValueOrDefault("MAV")], modeSize.sml + modeAlign.ri + CUSTOM_COLOR)
+	lcd.drawText(xTxt1, yTxt1, modelinfo.name, modeSize.sml + modeAlign.ri + CUSTOM_COLOR)
 	lcd.setColor(CUSTOM_COLOR, col_lab)
-	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "Vehicle", modeSize.sml + CUSTOM_COLOR) 
+	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, mavType[mav], modeSize.sml + CUSTOM_COLOR)
 end
 
 
@@ -550,7 +571,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	local myVoltage
 	local myPercent = 0
 	local battCell  = lipoCells.."S"
-	local battCapa  = getValueOrDefault("CAP")
+	local battCapa  = model.getGlobalVariable(1, 0)*10
 	
 	local _6SL = 21      -- 6 cells 6s | Warning
     local _6SH = 25.2    -- 6 cells 6s
@@ -700,7 +721,14 @@ local function drawHud(xCoord, yCoord, cellHeight, name)
 	--lcd.setColor(CUSTOM_COLOR, col_lin)
 	--lcd.drawRectangle(x_offset+size/2-size/2, y_offset+size/2-size/2, size, size, SOLID + LINE_COLOR )
 
-	hudImage = Bitmap.open(imagePath.."hud.png")
+	if name == "hud" then
+		hudImage = Bitmap.open(imagePath.."hud.png")
+	elseif name == "hud_hdg" then
+		myImgValue = getValueOrDefault("YAW")
+		hdgIndex = math.floor (myImgValue/15+0.5) --+1
+		if hdgIndex > 23 then hdgIndex = 23 end		-- ab 352 Grad auf Index 23
+		hudImage = Bitmap.open(imagePath.."hud"..hdgIndex..".png")
+	end
 	w, h = Bitmap.getSize(hudImage)
 	xPic = xCoord + (cellWidth * 0.5) - (w * 0.5); yPic = yCoord + (cellWidth * 0.5) - (h * 0.5)
 	lcd.drawBitmap(hudImage, xPic, yPic)
@@ -725,7 +753,7 @@ local function callWidget(name, xPos, yPos, height)
 			timerWidget(xPos, yPos, height, name, "timer.png")
 		elseif (name == "mavtype") then
 			mavtypeWidget(xPos, yPos, height, name, nil)
-		elseif (name == "hud") then
+		elseif (name == "hud" or name == "hud_hdg") then
 			drawHud(xPos, yPos, height, name, nil)
 
 		
