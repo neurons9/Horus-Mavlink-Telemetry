@@ -54,7 +54,8 @@
 -- ***************************
 
 local function init_func()
-	local yaw,pit,rol,mod,arm,sat,alt,msl,spd,dst,vol,cur,drw,cap,lat,lon,hdp,vdp,sat,fix,mav = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	local yaw,pit,rol,mod,arm,efs,bfs,sat,alt,msl,spd,dst,vol,cur,drw,lat,lon,hdp,vdp,sat,fix = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+	local mav,cap = 0,0
 	local i0,i1,i2,v
 end
 
@@ -70,72 +71,82 @@ local function run()
 	
 	
 	-- unpack 5001 packet
-	if i2 == 20481 then
+	if i2 == 0x5001 then
 		mod = bit32.extract(v,0,5)
 		arm = bit32.extract(v,8,1)
-		setTelemetryValue (5001,0,1,mod,0,0,"MOD")
-		setTelemetryValue (5001,0,2,arm,0,0,"ARM")
+		bfs = bit32.extract(v,9,1)
+		efs = bit32.extract(v,10,1)
+		setTelemetryValue (5001,0,30,mod,0,0,"MOD")
+		setTelemetryValue (5001,0,31,arm,0,0,"ARM")
+		if bfs == 1 or efs == 1 then
+			setTelemetryValue (5001,0,32,1,0,0,"FS")
+		elseif bfs == 0 and efs == 0 then
+			setTelemetryValue (5001,0,32,0,0,0,"FS")
+		end
 	end
 	
 	-- unpack 5002 packet
-	if i2 == 20482 then
+	if i2 == 0x5002 then
 		sat = bit32.extract(v,0,4)
 		fix = bit32.extract(v,4,2)
-		hdp = bit32.extract(v,6,8)
-		vdp = bit32.extract(v,14,8)
-		msl = bit32.extract(v,22,9)
-		setTelemetryValue (5002,0,3,sat,0,0,"SAT")
-		setTelemetryValue (5002,0,4,fix,0,0,"FIX")
-		setTelemetryValue (5002,0,5,hdp,9,1,"HDP")
-		setTelemetryValue (5002,0,6,vdp,9,1,"VDP")
-		setTelemetryValue (5002,0,7,msl,9,0,"MSL")
+		hdp = bit32.extract(v,7,7)*(10^(bit32.extract(v,6,1)-1))
+		--vdp = bit32.extract(v,15,7)*(10^(bit32.extract(v,14,1)-1))
+		msl = bit32.extract(v,24,7)*(10^bit32.extract(v,22,2))
+		setTelemetryValue (5002,0,32,sat,0,0,"SAT")
+		setTelemetryValue (5002,0,33,fix,0,0,"FIX")
+		setTelemetryValue (5002,0,34,hdp,9,1,"HDP")
+		--setTelemetryValue (5002,0,35,vdp,9,1,"VDP")
+		setTelemetryValue (5002,0,36,msl,9,0,"MSL")
 	end
 	
 	-- unpack 5003 packet
-	if i2 == 20483 then
+	if i2 == 0x5003 then
 		vol = bit32.extract(v,0,9)
-		cur = bit32.extract(v,9,8)
+		cur = bit32.extract(v,10,7)*(10^bit32.extract(v,9,1))
 		drw = bit32.extract(v,17,15)
-		setTelemetryValue (5003,0,8,vol,1,1,"VOL")
-		setTelemetryValue (5003,0,9,cur,2,1,"CUR")
-		setTelemetryValue (5003,0,10,drw,3,0,"DRW")
+		setTelemetryValue (5003,0,37,vol,1,1,"VOL")
+		setTelemetryValue (5003,0,38,cur,2,1,"CUR")
+		setTelemetryValue (5003,0,39,drw,3,0,"DRW")
 	end
 	
 	-- unpack 5004 packet
-	if i2 == 20484 then
+	if i2 == 0x5004 then
 		dst = bit32.extract(v,0,12)
-		alt = bit32.extract(v,19,12)
-		setTelemetryValue (5004,0,11,dst,9,0,"DST")
-		setTelemetryValue (5004,0,12,alt,9,1,"ALT")
+		alt = bit32.extract(v,21,10)*(10^bit32.extract(v,19,2))
+        if (bit32.extract(v,31,1) == 1) then alt = -alt end
+		setTelemetryValue (5004,0,40,dst,9,0,"DST")
+		setTelemetryValue (5004,0,41,alt,9,1,"ALT")
 	end
 	
 	-- unpack 5005 packet
-	if i2 == 20485 then
-		spd = bit32.extract(v,9,8) * 0.2
+	if i2 == 0x5005 then
+		spd = bit32.extract(v,10,7)*(10^bit32.extract(v,9,1))/10
 		yaw = bit32.extract(v,17,11) * 0.2
-		setTelemetryValue (5005,0,13,spd,7,0,"SPD")
-		setTelemetryValue (5005,0,14,yaw,20,0,"YAW")
+		setTelemetryValue (5005,0,42,spd,7,0,"SPD")
+		setTelemetryValue (5005,0,43,yaw,20,0,"YAW")
 	end
 	
 	-- unpack 5006 packet
-	if i2 == 20486 then
+	if i2 == 0x5006 then
 		rol = (bit32.extract(v,0,11) -900) * 0.2
 		pit = (bit32.extract(v,11,10 ) -450) * 0.2
-		setTelemetryValue (5006,0,15,rol,20,0,"ROL")
-		setTelemetryValue (5006,0,16,pit,20,0,"PIT")
+		setTelemetryValue (5006,0,44,rol,20,0,"ROL")
+		setTelemetryValue (5006,0,45,pit,20,0,"PIT")
 	end
 	
 	-- unpack 5007 packet
-	if i2 == 20487 then
-		--iterator = bit32.extract(v,0,8)
-		iterator = bit32.band(bit32.rshift(v, 24), 0xff)
-		if iterator == 0x1 then 
-			mav = bit32.band(v, 0xffffff)
-			setTelemetryValue (5007,0,17,mav,0,0,"MAV")
+	if i2 == 0x5007 then
+		-- static values setting as global vars
+		local ParamID = bit32.extract(v,24,8)
+		if ParamID == 0x1 then 
+			mav = bit32.extract(v,0,8)
+			model.setGlobalVariable(0, 0, mav)
+			--setTelemetryValue (5007,0,46,mav,0,0,"MAV")
 		end
-		if iterator == 0x4 then 
-			cap = bit32.band(v, 0xffffff)
-			setTelemetryValue (5007,0,18,cap,3,0,"CAP")
+		if ParamID == 0x4 then
+			cap = bit32.extract(v,0,24)
+			model.setGlobalVariable(1, 0, cap/10)
+			--setTelemetryValue (5007,0,47,cap,3,0,"CAP")
 		end
 	end
 
