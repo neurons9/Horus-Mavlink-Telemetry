@@ -134,7 +134,7 @@ local w, h, image, xPic, yPic, xTxt1, yTxt1, yTxt2
 local widgetDefinition = {}
 
 local options = {
-	{ "Cells", VALUE, 3, 2, 6 },			-- lipo cells
+	{ "Cells", VALUE, 3, 2, 12 },			-- lipo cells
 	{ "Mode", SOURCE, 1},			        -- switch for toggle screens
 	{ "Setting", VALUE, 1, 1, 2 },	        -- widget templates
 }
@@ -185,18 +185,6 @@ function widget()
 end
 
 ---------------------------------------------
--- get ID of source -------------------------
----------------------------------------------
-local function getTelemtryID(name)
-	local field = getFieldInfo(name)
-	
-	if field then
-		return field.id
-	end
-	return -1
-end
-
----------------------------------------------
 -- get value --------------------------------
 ---------------------------------------------
 local function getValueOrDefault(value)
@@ -210,7 +198,7 @@ local function getValueOrDefault(value)
 end
 
 ---------------------------------------------
--- get value rounded ------------------------
+-- rounded value ----------------------------
 ---------------------------------------------
 local function round(num, decimal)
     local mult = 10^(decimal or 0)
@@ -237,12 +225,11 @@ end
 -- get and store messages from mavlink ------
 --------------------------------------------- 
 local function getMessages(value)
-	--value = getValue(getTelemtryID(5000))
 	if (value ~= nil) and (value ~= 0) and (value ~= messageLastChunk) then
-		currentMessageChunks[currentMessageChunkPointer + 1] = bit32.extract(value,24,7) 
-		currentMessageChunks[currentMessageChunkPointer + 2] = bit32.extract(value,16,7)
-		currentMessageChunks[currentMessageChunkPointer + 3] = bit32.extract(value,8,7) 
-		currentMessageChunks[currentMessageChunkPointer + 4] = bit32.extract(value,0,7)
+		currentMessageChunks[currentMessageChunkPointer + 1] = bit32.band(bit32.rshift(value, 24), 0x7f)
+		currentMessageChunks[currentMessageChunkPointer + 2] = bit32.band(bit32.rshift(value, 16), 0x7f)
+		currentMessageChunks[currentMessageChunkPointer + 3] = bit32.band(bit32.rshift(value, 8), 0x7f)
+		currentMessageChunks[currentMessageChunkPointer + 4] = bit32.band(value, 0x7f)
 		currentMessageChunkPointer = currentMessageChunkPointer + 4
 		if (currentMessageChunkPointer > 59) or (currentMessageChunks[currentMessageChunkPointer] == '\0') then
 			currentMessageChunkPointer = -1
@@ -286,8 +273,9 @@ local function getSPort()
 	i0,i1,i2,v = sportTelemetryPop()
 	
 	-- unpack 5000 packet
-	if i2 == 0x5000 then
-		msg = bit32.extract(v,0,31)
+	if i2 == 20480 then
+		svr = bit32.extract(v,0,3)
+		msg = bit32.extract(v,0,32)
 		getMessages(msg)
 	end
 
@@ -332,7 +320,7 @@ local function dynamicWidgetImg(xCoord, yCoord, cellHeight, name, myImgValue, im
 	if name == "heading" then
 		hdgIndex = math.floor (myImgValue/15+0.5) --+1
 		if hdgIndex > 23 then hdgIndex = 23 end		-- ab 352 Grad auf Index 23
-		image = Bitmap.open(imagePath.."pfeil"..hdgIndex..".png")
+		image = Bitmap.open(imagePath.."arrow"..hdgIndex..".png")
 	end
 	
 	-- dynamic image for flightmode
@@ -368,7 +356,7 @@ local function stdWidget(xCoord, yCoord, cellHeight, name, sensor, label, unit, 
 	local myValue
 	local myMinMaxValue
 	
-	xTxt1 = xCoord + cellWidth   * offsetValue.x
+	xTxt1 = xCoord + cellWidth  * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
     
@@ -571,7 +559,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	local myVoltage
 	local myPercent = 0
 	local battCell  = lipoCells.."S"
-	local battCapa  = model.getGlobalVariable(1, 0)*10
+	local battCapa  = getValueOrDefault("CAP")
 	
 	local _6SL = 21      -- 6 cells 6s | Warning
     local _6SH = 25.2    -- 6 cells 6s
@@ -864,4 +852,4 @@ local function refresh(context)
 	buildGrid(widgetDefinition, context)
 end
 
-return { name="Telemetry", options=options, create=create, update=update, refresh=refresh }
+return { name="APM-Telemetry", options=options, create=create, update=update, refresh=refresh }
