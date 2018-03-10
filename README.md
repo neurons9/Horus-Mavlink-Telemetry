@@ -4,8 +4,8 @@ A universal lua script for displaying mavlink values on FrSky Horus OpenTX
 This Lua Widget script shows varius Mavlink Data and / or standard sensors data and values on your screen.
 
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-26.png">
-<img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-32.png">
 <img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-38.png">
+<img src="https://raw.githubusercontent.com/zendrones/Horus-Mavlink-Telemetry/master/img/screenshot_x12s_17-12-16_00-26-32.png">
 
 To invoke the Passthrough Telemetrie follow these steps:
 
@@ -25,9 +25,8 @@ Setting  -- here you can define which setting to use<br>
 
 The widget definition examples should now display the following screens on your Horus:<br>
 Screen 1 (switch position 1) shows varius sensors and data<br>
-Screen 3 (switch position 3) shows Mavlink Messages (12 rows)<br>
 Screen 2 (switch position 2) shows an artificial horizon
-
+Screen 3 (switch position 3) shows Mavlink Messages (12 rows)<br>
 
 The "hud" widget needs at least 1/3 cell width and 2x height.<br>
 The "cfas" and "batt_ap" widget needs at least 3x cell height because.
