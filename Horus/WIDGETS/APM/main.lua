@@ -19,7 +19,7 @@
 
 
 
-local imagePath = "/WIDGETS/UNI/images/" 	-- path of widget/images on SD-Card
+local imagePath = "/WIDGETS/APM/images/" 	-- path of widget/images on SD-Card
 
 -- colors
 local col_std = BLUE			-- standard value color: `WHITE`,`GREY`,`LIGHTGREY`,`DARKGREY`,`BLACK`,`YELLOW`,`BLUE`,`RED`,`DARKRED`
@@ -136,14 +136,14 @@ local widgetDefinition = {}
 local options = {
 	{ "Cells", VALUE, 3, 2, 12 },			-- lipo cells
 	{ "Mode", SOURCE, 1},			        -- switch for toggle screens
-	{ "Setting", VALUE, 1, 1, 2 },	        -- widget templates
+	{ "Template", VALUE, 1, 1, 3 },	        -- widget templates
 }
 
 function create(zone, options)
 	local context  = { zone=zone, options=options }
 		lipoCells     = context.options.Cells
 		modeSwitch    = context.options.Mode
-		setting       = context.options.Setting
+		template       = context.options.Template
 		widget()
 	return context
 end
@@ -152,7 +152,7 @@ function update(context, options)
 	context.options = options
 	lipoCells     = context.options.Cells
 	modeSwitch    = context.options.Mode
-	setting       = context.options.Setting
+	template       = context.options.Template
 	context.back = nil
 	widget()
 end
@@ -162,22 +162,28 @@ end
 function widget()
 	local switchPos = getValue(modeSwitch)
 	-- standard sensors: battery heading vfas curr alt speed vspeed rssi rxbat timer 
-	-- Ardupilot  AP:    armed fm battery msg gps alt_ap msl_ap volt_ap curr_ap drawn_ap dist_ap speed_ap mavtype pitch roll yaw hud
+	-- Ardupilot  AP:    armed fm battery msg gps ap_alt ap_msl ap_volt ap_curr ap_drawn ap_dist ap_speed mavtype ap_pitch ap_roll ap_yaw hud hud_hdg
 	-- if one widget needs more space you can add "0" in the row after (max. 2 times). "1" for empty space
 	-- {{column1-row1,column1-row2,column1-row3},{column2-row1,column2-row2,column2-row3},{etc}}
 	
-	-- 2 examples of widget definitions with 3 screens, you can even add more
-	if     setting == 1 and switchPos < 0 then
-		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 1 and switchPos == 0 then
-		widgetDefinition = {{"roll", "pitch", "yaw", 1},{"hud_hdg"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 1 and switchPos > 0 then
+	-- 3 examples of widget definitions with 3 screens, you can even add more
+	if     template == 1 and switchPos <  0 then
+		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"ap_batt", 0, 0, "rxbat"},{"ap_volt", "ap_curr", "ap_drawn", "rssi"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 1 and switchPos == 0 then
+		widgetDefinition = {{"ap_roll", "ap_pitch", "ap_yaw", 1},{"hud_hdg"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 1 and switchPos >  0 then
 		widgetDefinition = {{"msg"}}
-	elseif setting == 2 and switchPos < 0 then
-		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"batt_ap", 0, 0, "rxbat"},{"volt_ap", "curr_ap", "drawn_ap", "rssi"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 2 and switchPos == 0 then
-		widgetDefinition = {{"roll", "pitch", "yaw", 1},{"hud_hdg"},{"gps", "alt_ap", "speed_ap", "dist_ap"}}
-	elseif setting == 2 and switchPos > 0 then
+	elseif template == 2 and switchPos <  0 then
+		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"ap_batt", 0, 0, "rxbat"},{"ap_volt", "ap_curr", "ap_drawn", "rssi"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 2 and switchPos == 0 then
+		widgetDefinition = {{"ap_roll", "ap_pitch", "ap_yaw", 1},{"hud_hdg"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 2 and switchPos >  0 then
+		widgetDefinition = {{"msg"}}
+	elseif template == 3 and switchPos <  0 then
+		widgetDefinition = {{"mavtype", "armed", "fm", "timer"},{"ap_batt", 0, 0, "rxbat"},{"ap_volt", "ap_curr", "ap_drawn", "rssi"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 3 and switchPos == 0 then
+		widgetDefinition = {{"ap_roll", "ap_pitch", "ap_yaw", 1},{"hud_hdg"},{"gps", "ap_alt", "ap_speed", "ap_dist"}}
+	elseif template == 3 and switchPos >  0 then
 		widgetDefinition = {{"msg"}}
 	else
 		widgetDefinition = {}
@@ -198,7 +204,7 @@ local function getValueOrDefault(value)
 end
 
 ---------------------------------------------
--- rounded value ----------------------------
+-- round value ------------------------------
 ---------------------------------------------
 local function round(num, decimal)
     local mult = 10^(decimal or 0)
@@ -448,7 +454,7 @@ local function timerWidget(xCoord, yCoord, cellHeight, name)
 		valTxt = string.format("%i",minute)..":0"..string.format("%i",sec)
 	end 
 	
-	xTxt1 = xCoord + cellWidth   * offsetValue.x
+	xTxt1 = xCoord + cellWidth  * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
 	
@@ -482,7 +488,6 @@ local function msgWidget(xCoord, yCoord, cellHeight, name)
 	lcd.setColor(CUSTOM_COLOR, col_lab)
 	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "Mavlink MSG", modeSize.sml + CUSTOM_COLOR)
 end
-
 
 ------------------------------------------------- 
 -- Flightmode ----------------------------- fm --
@@ -534,15 +539,15 @@ end
 -- Mavtype --------------------------- mavtype --
 ------------------------------------------------- 
 local function mavtypeWidget(xCoord, yCoord, cellHeight, name)
-	xTxt1 = xCoord + cellWidth
-	yTxt1 = yCoord + cellHeight/2 - modeSize.smlH/2
-	
 	local modelinfo = model.getInfo()
 	local mav = model.getGlobalVariable(0, 0)
 	
 	if mav == nil then
 		mav = 0
 	end
+	
+	xTxt1 = xCoord + cellWidth
+	yTxt1 = yCoord + cellHeight/2 - modeSize.smlH/2
 	
 	lcd.setColor(CUSTOM_COLOR, col_std)
 	lcd.drawText(xTxt1, yTxt1, modelinfo.name, modeSize.sml + modeAlign.ri + CUSTOM_COLOR)
@@ -573,8 +578,8 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	
 	if name == "vfas" then
 		myVoltage = getValueOrDefault("VFAS")
-	elseif name == "batt_ap" then
-		myVoltage = getValueOrDefault("VOL") 
+	elseif name == "ap_batt" then
+		myVoltage = getValueOrDefault("VOL")
 	end
 	
 	
@@ -602,7 +607,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	lcd.setColor(CUSTOM_COLOR, col_lab)
 	lcd.drawText(xCoord + offsetLabel.x, yCoord + offsetLabel.y, "["..battCell.."/"..battCapa.."mAh]", modeSize.sml + CUSTOM_COLOR)
 		
-	xTxt1 = xCoord + cellWidth   * offsetValue.x
+	xTxt1 = xCoord + cellWidth  * offsetValue.x
 	yTxt1 = yCoord + cellHeight - offsetValue.y
 	yTxt2 = yCoord + cellHeight - offsetUnit.y
 		
@@ -610,8 +615,8 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	lcd.drawText(xTxt1, yTxt2, "%", modeSize.sml + modeAlign.le + CUSTOM_COLOR)
 	
 	if myPercent > 100 then myPercent = 100 end
-	if myPercent < 0   then myPercent = 0   end
-	if myPercent < 30 and myPercent >= 20 then
+	if myPercent < 0   then myPercent =   0 end
+	if myPercent < 30  and  myPercent >= 20 then
 		lcd.setColor(CUSTOM_COLOR, YELLOW)
 	elseif myPercent < 20  then
 		lcd.setColor(CUSTOM_COLOR, RED)
@@ -636,8 +641,8 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 		elseif myPercent < 10 then batIndex = "X"
 	end
 	
-	if batName ~= imagePath.."B"..batIndex..".png" then
-		batName = imagePath.."B"..batIndex..".png"
+	if  batName ~= imagePath.."B"..batIndex..".png" then
+		batName  = imagePath.."B"..batIndex..".png"
 		batImage = Bitmap.open(batName)
 	end
 	
@@ -650,7 +655,7 @@ end
 -- Horizon ------------------------------- hud --
 -------------------------------------------------
 local function drawHud(xCoord, yCoord, cellHeight, name)
- 	
+
  	local rol = getValueOrDefault("ROL")
  	local pit = getValueOrDefault("PIT")
  	
@@ -713,7 +718,7 @@ local function drawHud(xCoord, yCoord, cellHeight, name)
 		hudImage = Bitmap.open(imagePath.."hud.png")
 	elseif name == "hud_hdg" then
 		myImgValue = getValueOrDefault("YAW")
-		hdgIndex = math.floor (myImgValue/15+0.5) --+1
+		hdgIndex = math.floor (myImgValue/15+0.5)   --+1
 		if hdgIndex > 23 then hdgIndex = 23 end		-- ab 352 Grad auf Index 23
 		hudImage = Bitmap.open(imagePath.."hud"..hdgIndex..".png")
 	end
@@ -729,7 +734,7 @@ local function callWidget(name, xPos, yPos, height)
 		-- special widgets / txt widgets
 		if (name == "msg") then
 			msgWidget(xPos, yPos, height, name)
-		elseif (name == "batt" or name == "batt_ap") then
+		elseif (name == "batt" or name == "ap_batt") then
 			batteryWidget(xPos, yPos, height, name)
 		elseif (name == "armed") then
 			armedWidget(xPos, yPos, height, name, 1)
@@ -745,49 +750,53 @@ local function callWidget(name, xPos, yPos, height)
 			drawHud(xPos, yPos, height, name, nil)
 
 		
-		-- stdWidget(x,      y,      height, name, sensor,      label,         unit,   dig, minmax,   img)
+		-- stdWidget(x,      y,      height, name, sensor,      label,         unit,   dig, minmax,     img)
 				
 		-- standard sensor widgets called with sensors
 		elseif (name == "vfas") then
-			stdWidget(xPos,  yPos,   height, name, "VFAS",      "Volt",        "V",    1, "VFAS-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "VFAS",      "Volt",        "V",    1,   "VFAS-",    nil)
 		elseif (name == "curr") then
-			stdWidget(xPos,  yPos,   height, name, "Curr",      "Curr",        "A",    1, "Curr+",    nil)
+			stdWidget(xPos,  yPos,   height, name, "Curr",      "Curr",        "A",    1,   "Curr+",    nil)
 		elseif (name == "rxbat") then
-			stdWidget(xPos,  yPos,   height, name, "RxBt",      "RxBt",        "V",    1, "RxBt-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "RxBt",      "RxBt",        "V",    1,   "RxBt-",    nil)
 		elseif (name == "rssi")  then
 			stdWidget(xPos,  yPos,   height, name, "RSSI",      "RSSI",        "db",   nil, "RSSI-",    1)
 		elseif (name == "speed") then
-			stdWidget(xPos,  yPos,   height, name, "GSpd",      "H Speed",     "km/h", 0, "GSpd+",    nil)
+			stdWidget(xPos,  yPos,   height, name, "GSpd",      "H Speed",     "km/h", 0,   "GSpd+",    nil)
 		elseif (name == "vspeed") then
-			stdWidget(xPos,  yPos,   height, name, "V-Speed",   "V Speed",     "m/s",  0, "V-Speed+", nil)
+			stdWidget(xPos,  yPos,   height, name, "V-Speed",   "V Speed",     "m/s",  0,   "V-Speed+", nil)
 		elseif (name == "dist") then
-			stdWidget(xPos,  yPos,   height, name, "Dist",      "Dist",        "m",    1, "Dist-",    nil)
+			stdWidget(xPos,  yPos,   height, name, "Dist",      "Dist",        "m",    1,   "Dist-",    nil)
 		elseif (name == "alt") then
-			stdWidget(xPos,  yPos,   height, name, "Alt",       "Alt",         "m",    1, "Alt+",     nil)
-		elseif (name == "heading") then
+			stdWidget(xPos,  yPos,   height, name, "Alt",       "Alt",         "m",    1,   "Alt+",     nil)
+		elseif (name == "hdg") then
 			stdWidget(xPos,  yPos,   height, name, "Hdg",       "Heading",     "dg",   1,   nil,        nil)
 			
 		-- standard widgets called with passthrough telemetry sensors
-		elseif (name == "alt_ap") then
-			stdWidget(xPos,  yPos,   height, name, "ALT",       "AGL",         "m",    1,   nil,        nil)
-		elseif (name == "speed_ap") then
-			stdWidget(xPos,  yPos,   height, name, "SPD",       "Speed",       "km/h", nil, nil,        nil)
-		elseif (name == "dist_ap") then
-			stdWidget(xPos,  yPos,   height, name, "DST",       "Dist",        "m",    1,   nil,        nil)
-		elseif (name == "msl_ap") then
-			stdWidget(xPos,  yPos,   height, name, "MSL",       "MSL",         "m",    1,   nil,        nil)
-		elseif (name == "volt_ap") then
-			stdWidget(xPos,  yPos,   height, name, "VOL",       "Volt",        "V",    2,   nil,        nil)
-		elseif (name == "curr_ap") then
-			stdWidget(xPos,  yPos,   height, name, "CUR",       "Curr",        "A",    1,   nil,        nil)
-		elseif (name == "drawn_ap") then
-			stdWidget(xPos,  yPos,   height, name, "DRW",       "Used",        "mAh",  nil, nil,        nil)
-		elseif (name == "yaw") then
-			stdWidget(xPos,  yPos,   height, name, "YAW",       "Yaw",         "dg",   nil, nil,        nil)
-		elseif (name == "pitch") then
-			stdWidget(xPos,  yPos,   height, name, "PIT",       "Pitch",       "dg",   nil, nil,        nil)
-		elseif (name == "roll") then
-			stdWidget(xPos,  yPos,   height, name, "ROL",       "Roll",        "dg",   nil, nil,        nil)
+		elseif (name == "ap_alt") then
+			stdWidget(xPos,  yPos,   height, name,  "ALT",      "AGL",         "m",    1,   nil,        nil)
+		elseif (name == "ap_vdp") then
+			stdWidget(xPos,  yPos,   height, name,  "VDP",      "VDOP",        "m",    1,   nil,        nil)
+		elseif (name == "ap_hdp") then
+			stdWidget(xPos,  yPos,   height, name,  "HDP",      "HDOP",        "m",    1,   nil,        nil)
+		elseif (name == "ap_speed") then
+			stdWidget(xPos,  yPos,   height, name,  "SPD",      "Speed",       "km/h", nil, nil,        nil)
+		elseif (name == "ap_dist") then
+			stdWidget(xPos,  yPos,   height, name,  "DST",      "Dist",        "m",    1,   nil,        nil)
+		elseif (name == "ap_msl") then
+			stdWidget(xPos,  yPos,   height, name,  "MSL",      "MSL",         "m",    1,   nil,        nil)
+		elseif (name == "ap_volt") then
+			stdWidget(xPos,  yPos,   height, name,  "VOL",      "Volt",        "V",    2,   nil,        nil)
+		elseif (name == "ap_curr") then
+			stdWidget(xPos,  yPos,   height, name,  "CUR",      "Curr",        "A",    1,   nil,        nil)
+		elseif (name == "ap_drawn") then
+			stdWidget(xPos,  yPos,   height, name,  "DRW",      "Used",        "mAh",  nil, nil,        nil)
+		elseif (name == "ap_yaw") then
+			stdWidget(xPos,  yPos,   height, name,  "YAW",      "Yaw",         "dg",   nil, nil,        nil)
+		elseif (name == "ap_pitch") then
+			stdWidget(xPos,  yPos,   height, name,  "PIT",      "Pitch",       "dg",   nil, nil,        nil)
+		elseif (name == "ap_roll") then
+			stdWidget(xPos,  yPos,   height, name,  "ROL",      "Roll",        "dg",   nil, nil,        nil)
 				
 		else
 			return
@@ -852,4 +861,4 @@ local function refresh(context)
 	buildGrid(widgetDefinition, context)
 end
 
-return { name="APM-Telemetry", options=options, create=create, update=update, refresh=refresh }
+return { name="APM-Mavlink-SPort", options=options, create=create, update=update, refresh=refresh }

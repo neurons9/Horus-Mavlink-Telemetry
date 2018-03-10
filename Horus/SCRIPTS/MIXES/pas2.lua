@@ -13,49 +13,44 @@
 --
 -- A copy of the GNU General Public License is available at <http://www.gnu.org/licenses/>
 --
--- HUD is based on Marco Ricci openxsensor hud
--- Dynamic widgets is based on johfla                                   
--- Some widgets are based on work by Ollicious 
-
 -- 0	Raw unit (no unit)	UNIT_RAW
--- 1	Volts	UNIT_VOLTS
--- 2	Amps	UNIT_AMPS
--- 3	Milliamps	UNIT_MILLIAMPS
--- 4	Knots	UNIT_KTS
+-- 1	Volts				UNIT_VOLTS
+-- 2	Amps				UNIT_AMPS
+-- 3	Milliamps			UNIT_MILLIAMPS
+-- 4	Knots				UNIT_KTS
 -- 5	Meters per Second	UNIT_METERS_PER_SECOND
--- 6	Feet per Second	UNIT_FEET_PER_SECOND
+-- 6	Feet per Second		UNIT_FEET_PER_SECOND
 -- 7	Kilometers per Hour	UNIT_KMH
--- 8	Miles per Hour	UNIT_MPH
--- 9	Meters	UNIT_METERS
--- 10	Feet	UNIT_FEET
--- 11	Degrees Celsius	UNIT_CELSIUS
+-- 8	Miles per Hour		UNIT_MPH
+-- 9	Meters				UNIT_METERS
+-- 10	Feet				UNIT_FEET
+-- 11	Degrees Celsius		UNIT_CELSIUS
 -- 12	Degrees Fahrenheit	UNIT_FAHRENHEIT
--- 13	Percent	UNIT_PERCENT
+-- 13	Percent				UNIT_PERCENT
 -- 14	Milliamp per Hour	UNIT_MAH
--- 15	Watts	UNIT_WATTS
--- 16	Milliwatts	UNIT_MILLIWATTS
--- 17	dB	UNIT_DB
--- 18	RPM	UNIT_RPMS
--- 19	G	UNIT_G
--- 20	Degrees	UNIT_DEGREE
--- 21	Radians	UNIT_RADIANS
--- 22	Milliliters	UNIT_MILLILITERS
--- 23	Fluid Ounces	UNIT_FLOZ
--- 24	Hours	UNIT_HOURS
--- 25	Minutes	UNIT_MINUTES
--- 26	Seconds	UNIT_SECONDS
--- 27	UNIT_CELLS
--- 28	UNIT_DATETIME
--- 29	UNIT_GPS
--- 30	UNIT_BITFIELD
--- 31	UNIT_TEXT
+-- 15	Watts				UNIT_WATTS
+-- 16	Milliwatts			UNIT_MILLIWATTS
+-- 17	dB					UNIT_DB
+-- 18	RPM					UNIT_RPMS
+-- 19	G					UNIT_G
+-- 20	Degrees				UNIT_DEGREE
+-- 21	Radians				UNIT_RADIANS
+-- 22	Milliliters			UNIT_MILLILITERS
+-- 23	Fluid Ounces		UNIT_FLOZ
+-- 24	Hours				UNIT_HOURS
+-- 25	Minutes				UNIT_MINUTES
+-- 26	Seconds				UNIT_SECONDS
+-- 27						UNIT_CELLS
+-- 28						UNIT_DATETIME
+-- 29						UNIT_GPS
+-- 30						UNIT_BITFIELD
+-- 31						UNIT_TEXT
 
--- initialize	global variable
+-- initialize variables
 -- ***************************
 
 local function init_func()
-	local yaw,pit,rol,mod,arm,efs,bfs,sat,alt,msl,spd,dst,vol,cur,drw,lat,lon,hdp,vdp,sat,fix = 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	local mav,cap = 0,0
+	local vol,cur,drw,dst,alt,spd,yaw,rol,pit,mav,cap = 0,0,0,0,0,0,0,0,0,0,0
 	local i0,i1,i2,v
 end
 
@@ -69,35 +64,7 @@ local function run()
 	
 	i0,i1,i2,v = sportTelemetryPop()
 	
-	
-	-- unpack 5001 packet
-	if i2 == 0x5001 then
-		mod = bit32.extract(v,0,5)
-		arm = bit32.extract(v,8,1)
-		bfs = bit32.extract(v,9,1)
-		efs = bit32.extract(v,10,1)
-		setTelemetryValue (5001,0,30,mod,0,0,"MOD")
-		setTelemetryValue (5001,0,31,arm,0,0,"ARM")
-		if bfs == 1 or efs == 1 then
-			setTelemetryValue (5001,0,32,1,0,0,"FS")
-		elseif bfs == 0 and efs == 0 then
-			setTelemetryValue (5001,0,32,0,0,0,"FS")
-		end
-	end
-	
-	-- unpack 5002 packet
-	if i2 == 0x5002 then
-		sat = bit32.extract(v,0,4)
-		fix = bit32.extract(v,4,2)
-		hdp = bit32.extract(v,7,7)*(10^(bit32.extract(v,6,1)-1))
-		--vdp = bit32.extract(v,15,7)*(10^(bit32.extract(v,14,1)-1))
-		msl = bit32.extract(v,24,7)*(10^bit32.extract(v,22,2))
-		setTelemetryValue (5002,0,32,sat,0,0,"SAT")
-		setTelemetryValue (5002,0,33,fix,0,0,"FIX")
-		setTelemetryValue (5002,0,34,hdp,9,1,"HDP")
-		--setTelemetryValue (5002,0,35,vdp,9,1,"VDP")
-		setTelemetryValue (5002,0,36,msl,9,0,"MSL")
-	end
+	-- splitted into two parts for more performance
 	
 	-- unpack 5003 packet
 	if i2 == 0x5003 then
@@ -134,9 +101,8 @@ local function run()
 		setTelemetryValue (5006,0,45,pit,20,0,"PIT")
 	end
 	
-	-- unpack 5007 packet
+	-- unpack 5007 packet if GL1 and GL2 == 0
 	if i2 == 0x5007 then
-		-- static values setting as global vars
 		local ParamID = bit32.extract(v,24,8)
 		if ParamID == 0x1 then 
 			mav = bit32.extract(v,0,8)
