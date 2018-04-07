@@ -29,7 +29,7 @@ Screen 2 (switch position 2) shows an artificial horizon
 Screen 3 (switch position 3) shows Mavlink Messages (12 rows)<br>
 
 The "hud" widget needs at least 1/3 cell width and 2x height.<br>
-The "cfas" and "batt_ap" widget needs at least 3x cell height because.
+The "cfas" and "ap_batt" widget needs at least 3x cell height because.
 The "msg" widget needs the whole screen
 
 You can configure your own settings like this:
