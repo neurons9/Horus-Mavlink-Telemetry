@@ -108,12 +108,12 @@ fixetype[2] = "GPS Fix 2D"
 fixetype[3] = "DGPS"
 
 -- Mavlink messages
-messages = {}
+local messages = {}
 for i = 1, 12 do
 	messages[i] = nil
 end
 
-currentMessageChunks = {}
+local currentMessageChunks = {}
 for i = 1, 60 do
 	currentMessageChunks[i] = nil
 end
@@ -141,25 +141,17 @@ local options = {
 
 function create(zone, options)
 	local context  = { zone=zone, options=options }
-		lipoCells     = context.options.Cells
-		modeSwitch    = context.options.Mode
-		template       = context.options.Template
-		widget()
 	return context
 end
 
-function update(context, options)
-	context.options = options
-	lipoCells     = context.options.Cells
-	modeSwitch    = context.options.Mode
-	template       = context.options.Template
-	context.back = nil
+function update(context, newOptions)
+	context.options = newOptions
 	widget()
 end
 
 -- #################### Definition of Widgets #################
 
-function widget()
+function widget(modeSwitch, template)
 	local switchPos = getValue(modeSwitch)
 	-- standard sensors: battery heading vfas curr alt speed vspeed rssi rxbat timer 
 	-- Ardupilot  AP:    armed fm battery msg gps ap_alt ap_msl ap_volt ap_curr ap_drawn ap_dist ap_speed mavtype ap_pitch ap_roll ap_yaw hud hud_hdg
@@ -198,9 +190,9 @@ local function getValueOrDefault(value)
 	
 	if tmp == nil then
 		return 0
+	else
+		return tmp
 	end
-	
-	return tmp
 end
 
 ---------------------------------------------
@@ -559,7 +551,7 @@ end
 ------------------------------------------------- 
 -- Battery --------------------------- battery --
 -------------------------------------------------
-local function batteryWidget(xCoord, yCoord, cellHeight, name)
+local function batteryWidget(xCoord, yCoord, cellHeight, name, lipoCells)
 
 	local myVoltage
 	local myPercent = 0
@@ -567,13 +559,13 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	local battCapa  = getValueOrDefault("CAP")
 	
 	local _6SL = 21      -- 6 cells 6s | Warning
-    local _6SH = 25.2    -- 6 cells 6s
+    	local _6SH = 25.2    -- 6 cells 6s
 	local _4SL = 13.4    -- 4 cells 4s | Warning
-    local _4SH = 16.8    -- 4 cells 4s
-    local _3SL = 10.4    -- 3 cells 3s | Warning
-    local _3SH = 12.6    -- 3 cells 3s
-    local _2SL = 7       -- 2 cells 2s | Warning
-    local _2SH = 8.4     -- 2 cells 2s
+    	local _4SH = 16.8    -- 4 cells 4s
+    	local _3SL = 10.4    -- 3 cells 3s | Warning
+    	local _3SH = 12.6    -- 3 cells 3s
+    	local _2SL = 7       -- 2 cells 2s | Warning
+    	local _2SH = 8.4     -- 2 cells 2s
     
 	
 	if name == "vfas" then
@@ -583,7 +575,7 @@ local function batteryWidget(xCoord, yCoord, cellHeight, name)
 	end
 	
 	
-    if lipoCells == 6 then
+	if lipoCells == 6 then
 		if myVoltage > 3 then
 			myPercent = math.floor((myVoltage-_6SL) * (100/(_6SH - _6SL)))
 		end
@@ -729,13 +721,13 @@ end
 
 -- ############################# Call Widgets #################################
  
-local function callWidget(name, xPos, yPos, height)
+local function callWidget(name, xPos, yPos, height, lipoCells)
 	if (xPos ~= nil and yPos ~= nil) then
 		-- special widgets / txt widgets
 		if (name == "msg") then
 			msgWidget(xPos, yPos, height, name)
-		elseif (name == "batt" or name == "ap_batt") then
-			batteryWidget(xPos, yPos, height, name)
+		elseif (name == "vfas" or name == "ap_batt") then
+			batteryWidget(xPos, yPos, height, name, lipoCells)
 		elseif (name == "armed") then
 			armedWidget(xPos, yPos, height, name, 1)
 		elseif (name == "fm") then
@@ -855,10 +847,8 @@ end
 local function refresh(context)
 	-- awake passthrough for mavlink msg
 	getSPort()
-	-- define widgets
-	widget()
 	-- Build Grid --
-	buildGrid(widgetDefinition, context)
+	buildGrid(widget(context.options.Mode, context.options.Template), context)
 end
 
 return { name="APM-Mavlink-SPort", options=options, create=create, update=update, refresh=refresh }
