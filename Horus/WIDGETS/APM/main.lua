@@ -151,7 +151,7 @@ end
 
 -- #################### Definition of Widgets #################
 
-function widget(modeSwitch, template)
+local function widget(modeSwitch, template)
 	local switchPos = getValue(modeSwitch)
 	-- standard sensors: battery heading vfas curr alt speed vspeed rssi rxbat timer 
 	-- Ardupilot  AP:    armed fm battery msg gps ap_alt ap_msl ap_volt ap_curr ap_drawn ap_dist ap_speed mavtype ap_pitch ap_roll ap_yaw hud hud_hdg
