@@ -49,12 +49,12 @@
 -- initialize variables
 -- ***************************
 
-local function init_func()
+local function initFunc()
 	local vol,cur,drw,dst,alt,spd,yaw,rol,pit,mav,cap = 0,0,0,0,0,0,0,0,0,0,0
-	local i0,i1,i2,v
+	local k0,k1,k2,kv
 end
 
-local function run()
+local function runFunc()
 	
 	-- sportTelemetryPop() returns 4 values:
 	-- sensor ID (number) -> i0
@@ -62,55 +62,55 @@ local function run()
 	-- data ID   (number) -> i2
 	-- value     (number) -> v
 	
-	i0,i1,i2,v = sportTelemetryPop()
+	k0,k1,k2,kv = sportTelemetryPop()
 	
 	-- splitted into two parts for more performance
 	
 	-- unpack 5003 packet
-	if i2 == 0x5003 then
-		vol = bit32.extract(v,0,9)
-		cur = bit32.extract(v,10,7)*(10^bit32.extract(v,9,1))
-		drw = bit32.extract(v,17,15)
-		setTelemetryValue (5003,0,37,vol,1,1,"VOL")
-		setTelemetryValue (5003,0,38,cur,2,1,"CUR")
-		setTelemetryValue (5003,0,39,drw,3,0,"DRW")
+	if k2 == 0x5003 then
+		vol = bit32.extract(kv,0,9)
+		cur = bit32.extract(kv,10,7)*(10^bit32.extract(kv,9,1))
+		drw = bit32.extract(kv,17,15)
+		setTelemetryValue (5003,0,38,vol,1,1,"VOL")
+		setTelemetryValue (5003,0,39,cur,2,1,"CUR")
+		setTelemetryValue (5003,0,40,drw,3,0,"DRW")
 	end
 	
 	-- unpack 5004 packet
-	if i2 == 0x5004 then
-		dst = bit32.extract(v,0,12)
-		alt = bit32.extract(v,21,10)*(10^bit32.extract(v,19,2))
-        if (bit32.extract(v,31,1) == 1) then alt = -alt end
-		setTelemetryValue (5004,0,40,dst,9,0,"DST")
-		setTelemetryValue (5004,0,41,alt,9,1,"ALT")
+	if k2 == 0x5004 then
+		dst = bit32.extract(kv,0,12)
+		alt = bit32.extract(kv,21,10)*(10^bit32.extract(kv,19,2))
+        if (bit32.extract(kv,31,1) == 1) then alt = -alt end
+		setTelemetryValue (5004,0,41,dst,9,0,"DST")
+		setTelemetryValue (5004,0,42,alt,9,1,"ALT")
 	end
 	
 	-- unpack 5005 packet
-	if i2 == 0x5005 then
-		spd = bit32.extract(v,10,7)*(10^bit32.extract(v,9,1))/10
-		yaw = bit32.extract(v,17,11) * 0.2
-		setTelemetryValue (5005,0,42,spd,7,0,"SPD")
-		setTelemetryValue (5005,0,43,yaw,20,0,"YAW")
+	if k2 == 0x5005 then
+		spd = bit32.extract(kv,10,7)*(10^bit32.extract(kv,9,1))/10
+		yaw = bit32.extract(kv,17,11) * 0.2
+		setTelemetryValue (5005,0,43,spd,7,0,"SPD")
+		setTelemetryValue (5005,0,44,yaw,20,0,"YAW")
 	end
 	
 	-- unpack 5006 packet
-	if i2 == 0x5006 then
-		rol = (bit32.extract(v,0,11) -900) * 0.2
-		pit = (bit32.extract(v,11,10 ) -450) * 0.2
-		setTelemetryValue (5006,0,44,rol,20,0,"ROL")
-		setTelemetryValue (5006,0,45,pit,20,0,"PIT")
+	if k2 == 0x5006 then
+		rol = (bit32.extract(kv,0,11) -900) * 0.2
+		pit = (bit32.extract(kv,11,10 ) -450) * 0.2
+		setTelemetryValue (5006,0,45,rol,20,0,"ROL")
+		setTelemetryValue (5006,0,46,pit,20,0,"PIT")
 	end
 	
 	-- unpack 5007 packet if GL1 and GL2 == 0
-	if i2 == 0x5007 then
-		local ParamID = bit32.extract(v,24,8)
+	if k2 == 0x5007 then
+		local ParamID = bit32.extract(kv,24,8)
 		if ParamID == 0x1 then 
-			mav = bit32.extract(v,0,8)
+			mav = bit32.extract(kv,0,8)
 			model.setGlobalVariable(0, 0, mav)
 			--setTelemetryValue (5007,0,46,mav,0,0,"MAV")
 		end
 		if ParamID == 0x4 then
-			cap = bit32.extract(v,0,24)
+			cap = bit32.extract(kv,0,24)
 			model.setGlobalVariable(1, 0, cap/10)
 			--setTelemetryValue (5007,0,47,cap,3,0,"CAP")
 		end
@@ -118,4 +118,4 @@ local function run()
 
 end
 
-return{run=run, init=init_func}
+return{run=runFunc, init=initFunc}

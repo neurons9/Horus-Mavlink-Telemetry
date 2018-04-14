@@ -49,12 +49,12 @@
 -- initialize variables
 -- ***************************
 
-local function init_func()
+local function initFunc()
 	local mod,arm,bfs,efs,sat,fix,hdp,vdp,msl = 0,0,0,0,0,0,0,0,0
-	local i0,i1,i2,v
+	local j0,j1,j2,jv
 end
 
-local function run()
+local function runFunc()
 	
 	-- sportTelemetryPop() returns 4 values:
 	-- sensor ID (number) -> i0
@@ -62,15 +62,15 @@ local function run()
 	-- data ID   (number) -> i2
 	-- value     (number) -> v
 	
-	i0,i1,i2,v = sportTelemetryPop()
+	j0,j1,j2,jv = sportTelemetryPop()
 	
 	
 	-- unpack 5001 packet
-	if i2 == 0x5001 then
-		mod = bit32.extract(v,0,5)
-		arm = bit32.extract(v,8,1)
-		bfs = bit32.extract(v,9,1)
-		efs = bit32.extract(v,10,1)
+	if j2 == 0x5001 then
+		mod = bit32.extract(jv,0,5)
+		arm = bit32.extract(jv,8,1)
+		bfs = bit32.extract(jv,9,1)
+		efs = bit32.extract(jv,10,1)
 		setTelemetryValue (5001,0,30,mod,0,0,"MOD")
 		setTelemetryValue (5001,0,31,arm,0,0,"ARM")
 		if bfs == 1 or efs == 1 then
@@ -81,19 +81,19 @@ local function run()
 	end
 	
 	-- unpack 5002 packet
-	if i2 == 0x5002 then
-		sat = bit32.extract(v,0,4)
-		fix = bit32.extract(v,4,2)
-		hdp = bit32.extract(v,7,7)*(10^(bit32.extract(v,6,1)-1))
-		vdp = bit32.extract(v,15,7)*(10^(bit32.extract(v,14,1)-1))
-		msl = bit32.extract(v,24,7)*(10^bit32.extract(v,22,2))
-		setTelemetryValue (5002,0,32,sat,0,0,"SAT")
-		setTelemetryValue (5002,0,33,fix,0,0,"FIX")
-		setTelemetryValue (5002,0,34,hdp,9,1,"HDP")
-		setTelemetryValue (5002,0,35,vdp,9,1,"VDP")
-		setTelemetryValue (5002,0,36,msl,9,1,"MSL")
+	if j2 == 0x5002 then
+		sat = bit32.extract(jv,0,4)
+		fix = bit32.extract(jv,4,2)
+		hdp = bit32.extract(jv,7,7)*(10^(bit32.extract(jv,6,1)-1))
+		vdp = bit32.extract(jv,15,7)*(10^(bit32.extract(jv,14,1)-1))
+		msl = bit32.extract(jv,24,7)*(10^bit32.extract(jv,22,2))
+		setTelemetryValue (5002,0,33,sat,0,0,"SAT")
+		setTelemetryValue (5002,0,34,fix,0,0,"FIX")
+		setTelemetryValue (5002,0,35,hdp,9,1,"HDP")
+		setTelemetryValue (5002,0,36,vdp,9,1,"VDP")
+		setTelemetryValue (5002,0,37,msl,9,1,"MSL")
 	end
 
 end
 
-return{run=run, init=init_func}
+return{run=runFunc, init=initFunc}
