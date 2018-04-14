@@ -16,7 +16,7 @@ To invoke the Passthrough Telemetrie follow these steps:
 5. Invoke the background Scripts in your model settings tab "custom scripts"
 6. Connect your vehicle with battery or USB Power and go to your models telemetry sensors and add the new sensors
 6. Go to your telemetrie setup and build a new screen, use the 1x1 layout and <strong>deactivate sliders and trim</strong>
-7. select the "telemetrie" widget.
+7. select the "APM-Mavlink-SPort" widget.
 8. Configure the widget to our needs:
 
 Cells		 -- lipo cells<br>
@@ -29,7 +29,7 @@ Screen 2 (switch position 2) shows an artificial horizon
 Screen 3 (switch position 3) shows Mavlink Messages (12 rows)<br>
 
 The "hud" widget needs at least 1/3 cell width and 2x height.<br>
-The "cfas" and "batt_ap" widget needs at least 3x cell height because.
+The "vfas" and "ap_batt" widget needs at least 3x cell height because.
 The "msg" widget needs the whole screen
 
 You can configure your own settings like this:
@@ -47,4 +47,8 @@ For testing the SPort Passthrough, there is a second widget in folder "Passthrou
 
 
 
-
+https://www.facebook.com/zenuavsolutions
+https://www.instagram.com/zenuavsolutions
+https://www.pinterest.de/zenuavsolutions
+https://www.xing.com/xbp/pages/zen-uav-solutions
+https://github.com/zenuavsolutions
