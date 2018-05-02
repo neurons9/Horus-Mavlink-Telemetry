@@ -306,7 +306,7 @@ function refresh(context)
         context.values.spd = tmpspeed
         -- value submitted in centidegress to .2 degree increments
         -- [0;18000] is mapped to [0;360000]
-        context.values.yaw = bit32.extract(v,17,11) * 0.2
+        context.values.yaw = bit32.extract(v,17,11) * 5
     end
 
     -- unpack 5006 packet
