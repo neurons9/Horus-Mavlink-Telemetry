@@ -274,39 +274,71 @@ function refresh(context)
     if i2 == 20482 then
         context.values.sat = bit32.extract(v,0,4)
         context.values.fix = bit32.extract(v,4,2)
-        context.values.hdp = bit32.extract(v,6,8)/10
-        context.values.vdp = bit32.extract(v,14,8)/10
-        context.values.msl = bit32.extract(v,22,9)
+
+        -- Extract the HDOP
+        if bit32.extract(v, 6, 1) > 0 then
+            context.values.hdp = bit32.extract(v, 7, 7)
+        else
+            context.values.hdp = bit32.extract(v, 7, 7) / 10
+        end
+
+        -- Extract VDOP
+        if bit32.extract(v, 14, 1) > 9 then
+            context.values.vdp = bit32.extract(v, 15, 7)
+        else
+            context.values.vdp = bit32.extract(v, 15, 7) / 10
+        end
+        context.values.vdp *= 10
+
+        -- Extract MSL
+        context.values.msl = bit32.extract(v, 24, 6)
+        context.values.msl = context.values.msl * (10 ^ (bit32.extract(v, 22, 2) + 1))
+
         if context.values.fix > 3 then context.values.fix = 3 end
     end
 
     -- unpack 5003 packet
     if i2 == 20483 then
-        context.values.vol = bit32.extract(v,0,9)/10
-        context.values.cur = bit32.extract(v,9,8)/10
+
+        -- Extract voltage
+        context.values.vol = bit32.extract(v, 0, 9) / 10
+
+        -- Extract current
+        if bit32.extract(v, 10, 7) > 0 then
+            context.values.cur = bit32.extract(v, 10, 7) / 10
+        else
+            context.values.cur = bit32.extract(v, 10, 7) / 100
+        end
+
+        -- Extract consumed capacity
         context.values.drw = bit32.extract(v,17,15)
     end
 
     -- unpack 5004 packet
     if i2 == 20484 then
-        context.values.dst = bit32.extract(v,0,12)
-        context.values.alt = bit32.extract(v,19,12)/10
+
+        -- extract home distance
+        context.values.dst = bit32.extract(v, 2, 10)
+        context.values.dst = context.values.dst * ( 10 ^ bit32.extract(v, 0, 2))
+
+        -- extract relative altitude
+        context.values.dst = bit32.extract(v, 14, 10)
+        context.values.dst = context.values.dst * ( 10 ^ bit32.extract(v, 12, 2))
     end
 
     -- unpack 5005 packet
     if i2 == 20485 then
-        -- first 7 bit are the value, following bit the exponent
-        -- value submitted in dm/s
-        local tmpspeed = bit32.extract(v,9,7)
-        -- Check 10^b is set, if so multiply to the correct value
-        if bit32.extract(v,16,1) > 0 then
-            tmpspeed = tmpspeed * 10
+
+        -- extract speed
+        if bit32.extract(v, 9, 1) then
+            context.values.spd = bit32.extract(v, 10, 7) / 10
+        else
+            context.values.spd = bit32.extract(v, 10, 7) / 100
         end
-        --bit32.extract(v,9,8) * 0.2
-        context.values.spd = tmpspeed
+
         -- value submitted in centidegress to .2 degree increments
-        -- [0;18000] is mapped to [0;360000]
-        context.values.yaw = bit32.extract(v,17,11) * 5
+        -- [0;1800] is mapped to [0;360]
+        context.values.yaw = bit32.extract(v,17,11) * 0.2
     end
 
     -- unpack 5006 packet
