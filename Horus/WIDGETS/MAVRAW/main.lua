@@ -272,8 +272,8 @@ function refresh(context)
 
     -- unpack 5002 packet
     if i2 == 20482 then
-        context.values.sat = bit32.extract(v,0,4)
-        context.values.fix = bit32.extract(v,4,2)
+        context.values.sat = bit32.extract(v, 0, 4)
+        context.values.fix = bit32.extract(v, 4, 2)
 
         -- Extract the HDOP
         if bit32.extract(v, 6, 1) > 0 then
@@ -283,12 +283,11 @@ function refresh(context)
         end
 
         -- Extract VDOP
-        if bit32.extract(v, 14, 1) > 9 then
+        if bit32.extract(v, 14, 1) > 0 then
             context.values.vdp = bit32.extract(v, 15, 7)
         else
             context.values.vdp = bit32.extract(v, 15, 7) / 10
         end
-        context.values.vdp *= 10
 
         -- Extract MSL
         context.values.msl = bit32.extract(v, 24, 6)
