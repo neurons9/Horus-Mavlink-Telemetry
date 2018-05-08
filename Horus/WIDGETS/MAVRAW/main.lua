@@ -304,9 +304,9 @@ function refresh(context)
 
         -- Extract current
         if bit32.extract(v, 10, 7) > 0 then
-            context.values.cur = bit32.extract(v, 10, 7) / 10
+            context.values.cur = bit32.extract(v, 10, 7)
         else
-            context.values.cur = bit32.extract(v, 10, 7) / 100
+            context.values.cur = bit32.extract(v, 10, 7) / 10
         end
 
         -- Extract consumed capacity
