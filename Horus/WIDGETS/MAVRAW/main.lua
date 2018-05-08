@@ -176,7 +176,7 @@ local function drawTxt(context)
     lcd.setColor(CUSTOM_COLOR, context.options.Color)
     local FLAGS = SMLSIZE + LEFT + CUSTOM_COLOR
 
-    lcd.drawText(10,50,"FrSky Mavlink Passthrough", 0 + LEFT + CUSTOM_COLOR)
+    lcd.drawText(10,50,"FrSky Mavlink Passthrough TKC 2", 0 + LEFT + CUSTOM_COLOR)
     lcd.drawLine(10, 70, 470, 70, DOTTED, CUSTOM_COLOR)
 
     lcd.drawText(  10,80, "Msg ASCII:",      FLAGS)
@@ -290,8 +290,10 @@ function refresh(context)
         end
 
         -- Extract MSL
-        context.values.msl = bit32.extract(v, 24, 6)
-        context.values.msl = context.values.msl * (10 ^ (bit32.extract(v, 22, 2) + 1))
+        context.values.msl = bit32.extract(v, 24, 6) / 10
+        for variable = 0, bit32.extract(v, 22, 2), 1 do
+            context.values.msl = context.values.msl * 10
+        end
 
         if context.values.fix > 3 then context.values.fix = 3 end
     end
@@ -317,12 +319,16 @@ function refresh(context)
     if i2 == 20484 then
 
         -- extract home distance
-        context.values.dst = bit32.extract(v, 2, 10)
-        context.values.dst = context.values.dst * ( 10 ^ bit32.extract(v, 0, 2))
+        context.values.dst = bit32.extract(v, 2, 10) / 10
+        for variable = 0, bit32.extract(v, 0, 2), 1 do
+            context.values.dst = context.values.dst * 10
+        end
 
         -- extract relative altitude
-        context.values.dst = bit32.extract(v, 14, 10)
-        context.values.dst = context.values.dst * ( 10 ^ bit32.extract(v, 12, 2))
+        context.values.alt = bit32.extract(v, 14, 10) / 10
+        for variable = 0, bit32.extract(v, 12, 2), 1 do
+            context.values.alt = context.values.alt * 10
+        end
     end
 
     -- unpack 5005 packet
