@@ -176,7 +176,7 @@ local function drawTxt(context)
     lcd.setColor(CUSTOM_COLOR, context.options.Color)
     local FLAGS = SMLSIZE + LEFT + CUSTOM_COLOR
 
-    lcd.drawText(10,50,"FrSky Mavlink Passthrough TKC 2", 0 + LEFT + CUSTOM_COLOR)
+    lcd.drawText(10,50,"FrSky Mavlink Passthrough", 0 + LEFT + CUSTOM_COLOR)
     lcd.drawLine(10, 70, 470, 70, DOTTED, CUSTOM_COLOR)
 
     lcd.drawText(  10,80, "Msg ASCII:",      FLAGS)
@@ -220,23 +220,26 @@ local function drawTxt(context)
 
     lcd.drawText(  240,175,"Lat:",        FLAGS)
     lcd.drawText(  240,190,"Lon:",        FLAGS)
+    -- lcd.drawText(  240,205,"Hdop:",        FLAGS)
+    -- lcd.drawText(  240,220,"Vdop:",        FLAGS)
     lcd.drawText(  240,205,"Hdop:",        FLAGS)
-    lcd.drawText(  240,220,"Vdop:",        FLAGS)
-    lcd.drawText(  240,235,"Sat count:", FLAGS)
-    lcd.drawText(  240,250,"Fix Type:",  FLAGS)
+    lcd.drawText(  240,220,"Sat count:", FLAGS)
+    lcd.drawText(  240,235,"Fix Type:",  FLAGS)
 
     lcd.drawText(350,95,mavType[context.values.mav],     FLAGS)
 
-    lcd.drawText(350,120,context.values.alt .. "m " .. " MSL: " .. context.values.msl .. "m",        FLAGS)
+    -- lcd.drawText(350,120,context.values.alt .. "m " .. " MSL: " .. context.values.msl .. "m",        FLAGS)
+    lcd.drawText(350,120,context.values.alt .. "m ",    FLAGS)
     lcd.drawText(350,135,context.values.spd .. "m/s",   FLAGS)
     lcd.drawText(350,150,context.values.dst .. "m",     FLAGS)
 
     lcd.drawText(350,175,context.values.lat,             FLAGS)
     lcd.drawText(350,190,context.values.lon,              FLAGS)
     lcd.drawText(350,205,context.values.hdp .. "m",       FLAGS)
-    lcd.drawText(350,220,context.values.vdp .. "m",       FLAGS)
-    lcd.drawText(350,235,context.values.sat,               FLAGS)
-    lcd.drawText(350,250,fixetype[context.values.fix],  FLAGS)
+    --lcd.drawText(350,220,context.values.vdp .. "m",       FLAGS)
+    lcd.drawText(350,220,context.values.sat,               FLAGS)
+    --lcd.drawText(350,250,fixetype[context.values.fix],  FLAGS)
+    lcd.drawText(350,235,fixetype[context.values.fix],  FLAGS)
 
 end
 
@@ -282,18 +285,20 @@ function refresh(context)
             context.values.hdp = bit32.extract(v, 7, 7) / 10
         end
 
+        -- Always 0
         -- Extract VDOP
-        if bit32.extract(v, 14, 1) > 0 then
-            context.values.vdp = bit32.extract(v, 15, 7)
-        else
-            context.values.vdp = bit32.extract(v, 15, 7) / 10
-        end
+        -- if bit32.extract(v, 14, 1) > 0 then
+        --     context.values.vdp = bit32.extract(v, 15, 7)
+        -- else
+        --     context.values.vdp = bit32.extract(v, 15, 7) / 10
+        -- end
 
+        -- Varies way too much to be useful
         -- Extract MSL
-        context.values.msl = bit32.extract(v, 24, 6) / 10
-        for variable = 0, bit32.extract(v, 22, 2), 1 do
-            context.values.msl = context.values.msl * 10
-        end
+        -- context.values.msl = bit32.extract(v, 24, 6) / 100
+        -- for variable = 0, bit32.extract(v, 22, 2), 1 do
+        --     context.values.msl = context.values.msl * 10
+        -- end
 
         if context.values.fix > 3 then context.values.fix = 3 end
     end
@@ -325,7 +330,7 @@ function refresh(context)
         end
 
         -- extract relative altitude
-        context.values.alt = bit32.extract(v, 14, 10) / 10
+        context.values.alt = bit32.extract(v, 14, 10) / 100
         for variable = 0, bit32.extract(v, 12, 2), 1 do
             context.values.alt = context.values.alt * 10
         end
