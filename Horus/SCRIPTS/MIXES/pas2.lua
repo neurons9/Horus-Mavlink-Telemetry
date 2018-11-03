@@ -87,6 +87,8 @@ local function runFunc()
 	
 	-- unpack 5005 packet
 	if k2 == 0x5005 then
+		-- Add up vertical and horizontal velocity
+		-- spd_xy = bit32.extract(kv,10,7)
 		spd = bit32.extract(kv,10,7)*(10^bit32.extract(kv,9,1))/10
 		yaw = bit32.extract(kv,17,11) * 0.2
 		setTelemetryValue (5005,0,43,spd,7,0,"SPD")
